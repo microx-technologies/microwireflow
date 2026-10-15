@@ -24,7 +24,7 @@ jobs:
         run: |
           tag="${GITHUB_REF_NAME}"
           version="${tag#v}"
-          pkg_version="$(bun -p "require('./package.json').version")"
+          pkg_version="$(bun -p "require('./packages/microwireflow/package.json').version")"
           if [ "$pkg_version" != "$version" ]; then
             echo "::error::Tag '$tag' does not match package.json version '$pkg_version'."
             exit 1
@@ -37,7 +37,7 @@ jobs:
         run: bun run build
 
       - name: Pack tarball
-        run: bun pm pack
+        run: cd packages/microwireflow && bun pm pack && mv *.tgz ../../
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v3

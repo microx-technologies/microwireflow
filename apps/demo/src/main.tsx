@@ -1,4 +1,5 @@
-import { AuthDocs } from "@demo/AuthDocs.tsx";
+import { AuthDocs } from "@/AuthDocs.tsx";
+import "@/index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 

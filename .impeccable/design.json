@@ -1,0 +1,326 @@
+{
+  "components": [
+    {
+      "css": ".ds-btn-chrome { border: 2px solid var(--mw-ink); background: #ffffff; color: var(--mw-ink); border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; box-shadow: 2px 2px 0 0 var(--mw-ink); padding: 5px 14px; font-family: var(--mw-font); font-size: 16px; cursor: pointer; transition: translate 0.1s ease, box-shadow 0.1s ease; } .ds-btn-chrome:hover { translate: 1px 1px; box-shadow: 1px 1px 0 0 var(--mw-ink); } .ds-btn-chrome:active { translate: 2px 2px; box-shadow: 0 0 0 0 var(--mw-ink); } .ds-btn-chrome:focus-visible { outline: 3px solid var(--mw-ink); outline-offset: 2px; }",
+      "description": "Marker-tray toolbar button: paper chip that presses into the board.",
+      "html": "<button class=\"ds-btn-chrome\">Export positions</button>",
+      "kind": "button",
+      "name": "Chrome Button",
+      "refersTo": "button-chrome"
+    },
+    {
+      "css": ".ds-search { position: relative; display: flex; align-items: center; } .ds-search input { border: 2px solid var(--mw-ink); border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; padding: 6px 30px 6px 14px; font-family: var(--mw-font); font-size: 16px; width: 230px; outline: none; background: #ffffff; color: var(--mw-ink); box-shadow: 2px 2px 0 0 var(--mw-ink); } .ds-search input:focus { box-shadow: 3px 3px 0 0 var(--mw-ink); }",
+      "description": "Toolbar search field; focus deepens the shadow, never glows.",
+      "html": "<label class=\"ds-search\"><input class=\"ds-input-search\" placeholder=\"Search screens…\" /></label>",
+      "kind": "input",
+      "name": "Search Field",
+      "refersTo": "search-field"
+    },
+    {
+      "css": ".ds-node { width: 360px; background: var(--mw-paper); border: 2px solid var(--mw-ink); border-radius: 15px 6px 12px 5px / 5px 12px 6px 15px; box-shadow: 3px 3px 0 0 var(--mw-ink); font-family: var(--mw-font); color: var(--mw-ink); } .ds-node-head { position: relative; display: flex; align-items: center; gap: 8px; padding: 10px 14px 8px; border-bottom: 2px solid var(--mw-ink); } .ds-node-title { font-weight: 700; font-size: 19px; } .ds-node-kind { font-size: 13px; background: var(--mw-paper); border: 2px solid var(--mw-ink); border-radius: 7rem 8rem 8rem 8rem / 4rem 5rem 6rem 6rem; padding: 1px 10px; white-space: nowrap; } .ds-node-body { padding: 12px 14px 14px; font-size: 16px; }",
+      "description": "Node scrap: 360px paper card with taped header and kind pill.",
+      "html": "<div class=\"ds-node\"><div class=\"ds-node-head\"><span class=\"ds-node-title\">Login</span><span class=\"ds-node-kind\">screen</span></div><div class=\"ds-node-body\">Screen interior goes here.</div></div>",
+      "kind": "card",
+      "name": "Node Scrap",
+      "refersTo": "button-chrome"
+    },
+    {
+      "css": ".ds-trigger { position: relative; display: inline-flex; align-items: center; width: fit-content; cursor: pointer; font-family: var(--mw-font); font-size: 16px; color: var(--mw-ink); } .ds-trigger-handle { position: absolute; right: -7px; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; background: var(--mw-paper); border: 2px solid var(--mw-ink); border-radius: 50% 45% 52% 48% / 48% 52% 45% 52%; box-shadow: 1px 1px 0 0 var(--mw-ink); } .ds-trigger:hover .ds-trigger-handle { background: var(--mw-ink); }",
+      "description": "Trigger label with a pebble handle that floods ink on hover.",
+      "html": "<span class=\"ds-trigger\">Sign in<span class=\"ds-trigger-handle\"></span></span>",
+      "kind": "custom",
+      "name": "Trigger Handle",
+      "refersTo": "button-chrome"
+    },
+    {
+      "css": ".ds-picker { background: var(--mw-paper); border: 2px solid var(--mw-ink); border-radius: 15px 6px 12px 5px / 5px 12px 6px 15px; box-shadow: 4px 4px 0 0 var(--mw-ink); padding: 6px; min-width: 240px; transform: rotate(0.5deg); } .ds-picker button { display: block; width: 100%; text-align: left; border: 0; border-radius: 8px 20px 10px 22px / 18px 10px 22px 8px; background: transparent; color: var(--mw-ink); padding: 6px 10px; font-family: var(--mw-font); font-size: 16px; cursor: pointer; } .ds-picker button:hover { background: var(--mw-ink); color: var(--mw-paper); } .ds-picker-label { font-size: 14px; }",
+      "description": "Branch picker sign-band card; rows flood ink on hover.",
+      "html": "<div class=\"ds-picker\"><button>Home <span class=\"ds-picker-label\">screen</span></button><button>Login <span class=\"ds-picker-label\">screen</span></button></div>",
+      "kind": "custom",
+      "name": "Branch Picker Row",
+      "refersTo": "picker-item"
+    },
+    {
+      "css": ".ds-panel { width: 290px; border-left: 2px solid var(--mw-ink); background: var(--mw-paper); padding: 12px 14px 16px; font-family: var(--mw-font); color: var(--mw-ink); } .ds-panel h3 { margin: 2px 0; font-size: 21px; font-weight: 700; } .ds-panel-edge { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 3px 0; font-family: var(--mw-font); font-size: 16px; cursor: pointer; color: var(--mw-ink-soft); } .ds-panel-edge:hover { color: var(--mw-ink); text-decoration: underline wavy var(--mw-ink); text-underline-offset: 3px; }",
+      "description": "Annotation slip with ghost edge rows that ink up on hover.",
+      "html": "<div class=\"ds-panel\"><h3>Login</h3><button class=\"ds-panel-edge\">Sign in → Home</button></div>",
+      "kind": "custom",
+      "name": "Panel Edge Row",
+      "refersTo": "panel-edge"
+    },
+    {
+      "css": ".ds-overlay { background: var(--mw-paper); border: 2px solid var(--mw-red); color: var(--mw-red); border-radius: 15px 6px 12px 5px / 5px 12px 6px 15px; box-shadow: 3px 3px 0 0 var(--mw-red); padding: 10px 16px; font-family: var(--mw-font); font-size: 15px; transform: rotate(-0.5deg); }",
+      "description": "Red-inked validation slip pinned over the board.",
+      "html": "<div class=\"ds-overlay\">2 unconnected triggers<ul><li>Sign in has no edge</li></ul></div>",
+      "kind": "card",
+      "name": "Validation Overlay",
+      "refersTo": "button-chrome"
+    },
+    {
+      "css": ".ds-legend { background: var(--mw-paper); border: 2px solid var(--mw-ink); border-radius: 15px 6px 12px 5px / 5px 12px 6px 15px; box-shadow: 2px 2px 0 0 var(--mw-ink); padding: 8px 12px 9px; font-family: var(--mw-font); font-size: 14px; transform: rotate(-0.6deg); } .ds-legend-title { font-weight: 700; font-size: 15px; }",
+      "description": "Edge key legend card pinned bottom-left of the board.",
+      "html": "<div class=\"ds-legend\"><div class=\"ds-legend-title\">Edge key</div><div>— flow &nbsp; ⇢ trigger</div></div>",
+      "kind": "custom",
+      "name": "Edge Legend",
+      "refersTo": "button-chrome"
+    },
+    {
+      "name": "Demo Default Button",
+      "kind": "button",
+      "refersTo": "demo-button-default",
+      "description": "Registry Button, default variant: ink fill, paper text; presses into the board.",
+      "html": "<button class=\"ds-demo-btn-default\">Sign in</button>",
+      "css": ".ds-demo-btn-default { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 8px 16px; font-size: 14px; font-weight: 500; font-family: \"Patrick Hand\", \"Segoe Print\", \"Bradley Hand\", \"Comic Sans MS\", cursive; color: #ffffff; background: #000000; border: 2px solid #000000; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; box-shadow: 2px 2px 0 0 #000000; cursor: pointer; transition: translate 0.1s ease, box-shadow 0.1s ease; } .ds-demo-btn-default:hover { translate: 1px 1px; box-shadow: 1px 1px 0 0 #000000; } .ds-demo-btn-default:active { translate: 2px 2px; box-shadow: 0 0 0 0 #000000; } .ds-demo-btn-default:focus-visible { outline: 2px solid #000000; outline-offset: 2px; }"
+    },
+    {
+      "name": "Demo Neutral Button",
+      "kind": "button",
+      "refersTo": "demo-button-neutral",
+      "description": "Registry Button, neutral variant: paper fill, ink text; presses into the board.",
+      "html": "<button class=\"ds-demo-btn-neutral\">Forgot password?</button>",
+      "css": ".ds-demo-btn-neutral { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 8px 12px; font-size: 14px; font-weight: 500; font-family: \"Patrick Hand\", \"Segoe Print\", \"Bradley Hand\", \"Comic Sans MS\", cursive; color: #000000; background: #ffffff; border: 2px solid #000000; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; box-shadow: 2px 2px 0 0 #000000; cursor: pointer; transition: translate 0.1s ease, box-shadow 0.1s ease; } .ds-demo-btn-neutral:hover { translate: 1px 1px; box-shadow: 1px 1px 0 0 #000000; } .ds-demo-btn-neutral:active { translate: 2px 2px; box-shadow: 0 0 0 0 #000000; } .ds-demo-btn-neutral:focus-visible { outline: 2px solid #000000; outline-offset: 2px; }"
+    },
+    {
+      "name": "Demo Themed Input",
+      "kind": "input",
+      "refersTo": "demo-input-themed",
+      "description": "Registry Input on the neutral theme: paper field with sketch-ellipse radius.",
+      "html": "<input class=\"ds-demo-input\" placeholder=\"ada@sketch.shop\" />",
+      "css": ".ds-demo-input { height: 40px; width: 100%; padding: 8px 12px; font-size: 14px; font-weight: 500; font-family: \"Patrick Hand\", \"Segoe Print\", \"Bradley Hand\", \"Comic Sans MS\", cursive; color: #000000; background: #ffffff; border: 2px solid #000000; border-radius: 255px 25px 225px 25px / 25px 225px 25px 255px; outline: none; } .ds-demo-input::placeholder { color: rgb(0 0 0 / 0.5); } .ds-demo-input:focus-visible { outline: 2px solid #000000; outline-offset: 2px; }"
+    },
+    {
+      "name": "Demo sm Card",
+      "kind": "card",
+      "refersTo": "demo-card-sm",
+      "description": "Registry Card at sm size: sketch-card radius, ink border, small lift.",
+      "html": "<div class=\"ds-demo-card\"><div class=\"ds-demo-card-title\">Home, Ada</div><div>3 boards pinned.</div></div>",
+      "css": ".ds-demo-card { display: flex; flex-direction: column; gap: 16px; padding: 16px; font-family: \"Patrick Hand\", \"Segoe Print\", \"Bradley Hand\", \"Comic Sans MS\", cursive; color: #000000; background: #ffffff; border: 2px solid #000000; border-radius: 15px 6px 12px 5px / 5px 12px 6px 15px; box-shadow: 2px 2px 0 0 #000000; } .ds-demo-card-title { font-weight: 700; font-size: 19px; }"
+    }
+  ],
+  "extensions": {
+    "breakpoints": [],
+    "colorMeta": {
+      "board": {
+        "canonical": "#fbf8f1",
+        "displayName": "Desk Board",
+        "role": "neutral",
+        "tonalRamp": [
+          "#1c1a16",
+          "#4a443a",
+          "#6b6257",
+          "#8d8474",
+          "#aaa294",
+          "#c6bfb0",
+          "#e3ded2",
+          "#fbf8f1"
+        ]
+      },
+      "faint": {
+        "canonical": "#6b6257",
+        "displayName": "Faint Pencil",
+        "role": "neutral",
+        "tonalRamp": [
+          "#211d18",
+          "#38322b",
+          "#4f483d",
+          "#6b6257",
+          "#8d8474",
+          "#b0a897",
+          "#d2ccbd",
+          "#f2eee3"
+        ]
+      },
+      "ink": {
+        "canonical": "#141414",
+        "displayName": "Workshop Ink",
+        "role": "primary",
+        "tonalRamp": [
+          "#0a0a0a",
+          "#141414",
+          "#2e2e2e",
+          "#3d3d3d",
+          "#5c5c5c",
+          "#8a8a8a",
+          "#bdbdbd",
+          "#f0ede6"
+        ]
+      },
+      "ink-soft": {
+        "canonical": "#3d3d3d",
+        "displayName": "Soft Pencil",
+        "role": "neutral",
+        "tonalRamp": [
+          "#141414",
+          "#242424",
+          "#2e2e2e",
+          "#3d3d3d",
+          "#5c5c5c",
+          "#8a8a8a",
+          "#bdbdbd",
+          "#f0ede6"
+        ]
+      },
+      "paper": {
+        "canonical": "#fffdf5",
+        "displayName": "Scrap Paper",
+        "role": "neutral",
+        "tonalRamp": [
+          "#1c1a16",
+          "#4a443a",
+          "#6b6257",
+          "#8d8474",
+          "#aaa294",
+          "#c6bfb0",
+          "#e3ded2",
+          "#fffdf5"
+        ]
+      },
+      "red": {
+        "canonical": "#d92d20",
+        "displayName": "Alarm Red",
+        "role": "primary",
+        "tonalRamp": [
+          "#3d0d09",
+          "#661511",
+          "#8f1e18",
+          "#d92d20",
+          "#e4574b",
+          "#ec837a",
+          "#f4b3ad",
+          "#fbe3e0"
+        ]
+      },
+      "tape": {
+        "canonical": "rgb(233 213 148 / 0.85)",
+        "displayName": "Masking Tape",
+        "role": "neutral",
+        "tonalRamp": [
+          "#4a3f22",
+          "#6e5e35",
+          "#93804c",
+          "#b3a06e",
+          "#cbbd90",
+          "#e9d594",
+          "#f2e6bd",
+          "#faf3dc"
+        ]
+      },
+      "white": {
+        "canonical": "#ffffff",
+        "displayName": "Clean Sheet",
+        "role": "neutral",
+        "tonalRamp": [
+          "#2e2e2e",
+          "#4a4a4a",
+          "#6b6b6b",
+          "#8a8a8a",
+          "#aaa8a2",
+          "#c9c7c0",
+          "#e6e4dd",
+          "#ffffff"
+        ]
+      }
+    },
+    "motion": [
+      {
+        "name": "press",
+        "purpose": "Chrome and demo buttons press inward on hover/active; shadow shrinks instead of growing.",
+        "value": "translate 0.1s ease, box-shadow 0.1s ease"
+      }
+    ],
+    "shadows": [
+      {
+        "name": "card-lift",
+        "purpose": "Resting lift for node scraps, search dropdown, overlay.",
+        "value": "3px 3px 0 0 #141414"
+      },
+      {
+        "name": "small-lift",
+        "purpose": "Resting lift for search field, toolbar buttons, legend, minimap, controls, panel notes, demo inputs/buttons.",
+        "value": "2px 2px 0 0 #141414"
+      },
+      {
+        "name": "selected-lift",
+        "purpose": "Selected and hover-highlighted nodes, with outline at 3px offset (dashed for highlight).",
+        "value": "5px 5px 0 0 #141414"
+      },
+      {
+        "name": "red-lift",
+        "purpose": "Validation overlay drawn in alarm red instead of ink.",
+        "value": "3px 3px 0 0 #d92d20"
+      },
+      {
+        "name": "picker-lift",
+        "purpose": "Branch picker sign-band card.",
+        "value": "4px 4px 0 0 #141414"
+      }
+    ],
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "Board chrome, panel, triggers, toolbar, picker rows at 16px (edge labels 14px)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Screen-interior headings inside node scraps (22px/700)."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Picker subtitles, legend rows, panel kind tag (14px)."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Positions export only (13px monospace)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Node card titles at 19px/700 with kind pill alongside."
+      }
+    }
+  },
+  "generatedAt": "2026-10-15T22:02:58.216Z",
+  "narrative": {
+    "dos": [
+      "Do keep every board word in the Patrick Hand stack; reserve monospace for literal code (the positions export).",
+      "Do use uneven wobble radii and 2px ink borders on every floating surface.",
+      "Do press buttons inward on hover/active (shrink the shadow, translate 1–2px).",
+      "Do confine red to errors and validation; let ink carry everything else.",
+      "Do pair each hovered trigger with its highlighted edge pair (two-edge ink response).",
+      "Do respect the write boundary: library chrome in `src/styles.css`, screen interiors in demo-owned registry components (`apps/demo/src/components/ui`, `apps/demo/src/screens`)."
+    ],
+    "donts": [
+      "Don't introduce a second typeface, a blur shadow, a gradient, or a true rectangle/circle — the board has none.",
+      "Don't flood rows with anything but ink (hover states are always solid ink → paper text).",
+      "Don't invent new error colors or success greens; the system has exactly one alarm ink.",
+      "Don't copy this contract into source files; it lives here and in `.impeccable/design.json`, not as comments in shipped CSS.",
+      "Don't restyle screen interiors from the library — node bodies are demo-owned; the library styles only the scrap around them."
+    ],
+    "keyCharacteristics": [
+      "Cut paper, taped corners, hard 2–3px offset shadows in ink.",
+      "One handwriting voice (Patrick Hand stack) at every size.",
+      "Hand-drawn wobble radii; nothing is ever a true rectangle or circle.",
+      "Red ink only for errors and validation; ink everywhere else."
+    ],
+    "northStar": "The Pinned Workshop Board",
+    "overview": "Everything looks cut out of paper, taped to a cork-desk board, and inked by hand. The library owns the chrome — board, paper scraps, tape, marker tray, pasted slips, red-inked validation — and demo authors own the screen interiors drawn inside each scrap. One handwriting face everywhere; wobble lives in radii, rotations, and hard offset shadows, never in gradients or blur.",
+    "rules": [
+      {
+        "body": "The red (#d92d20) marks error-kind nodes, wavy error underlines, error slips, and the validation overlay only. It never decorates, never brands, never hovers.",
+        "name": "The Red-Is-An-Alarm Rule",
+        "section": "colors"
+      },
+      {
+        "body": "Every word on the board — nodes, toolbar, panel, picker, edges, controls — sets in the Patrick Hand stack. The only exception is literal code (the positions export), which sets in monospace.",
+        "name": "The One-Voice Rule",
+        "section": "typography"
+      },
+      {
+        "body": "Surfaces rest lifted and press down on hover/active (shadow shrinks, element translates 1–2px). Shadows never grow on hover; nothing floats higher.",
+        "name": "The Flat-By-Press Rule",
+        "section": "elevation"
+      }
+    ]
+  },
+  "schemaVersion": 2,
+  "title": "Design System: microwireflow"
+}

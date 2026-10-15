@@ -1,16 +1,6 @@
 import { SCREEN_NODE_TYPE, type ScreenNodeType } from "@/ScreenNode.tsx";
 import type { FlowNode } from "@/types.ts";
 
-/**
- * Structural sync for flow nodes.
- *
- * Adds new ids (seeded via `getPosition`), drops removed ids, refreshes
- * `data` (component + highlight). NEVER repositions existing nodes:
- * position/selection/drag state ride along via spread, so user drags survive
- * highlight changes, parent re-renders, and async layout arrivals.
- * Position updates happen only in dedicated effects (mount seed from
- * `finalPositions`, async computed arrival, Auto-layout, prop change).
- */
 export function syncFlowNodes(
   prev: ScreenNodeType[],
   flowNodes: FlowNode[],

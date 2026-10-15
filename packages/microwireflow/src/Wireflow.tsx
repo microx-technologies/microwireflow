@@ -2,6 +2,7 @@ import type { BuiltInEdge, NodeChange } from "@xyflow/react";
 
 import {
   Background,
+  BackgroundVariant,
   Controls,
   MiniMap,
   ReactFlow,
@@ -655,10 +656,63 @@ function CanvasInner(props: CanvasInnerProps) {
             }}
             proOptions={{ hideAttribution: false }}
           >
-            {props.showControls ? <Controls /> : null}
+            {props.showControls ? <Controls position="top-left" /> : null}
             {props.showMinimap ? <MiniMap /> : null}
-            <Background />
+            <Background
+              variant={BackgroundVariant.Lines}
+              gap={24}
+              size={1}
+              color="#e6ddc9"
+              bgColor="#fbf8f1"
+            />
           </ReactFlow>
+          <div className="mw-legend" aria-hidden="true">
+            <div className="mw-legend-title">edge key</div>
+            <div className="mw-legend-row">
+              <svg width="34" height="8" aria-hidden="true">
+                <line
+                  x1="1"
+                  y1="4"
+                  x2="33"
+                  y2="4"
+                  stroke="#141414"
+                  strokeWidth="2.25"
+                  strokeLinecap="round"
+                />
+              </svg>
+              plain path
+            </div>
+            <div className="mw-legend-row">
+              <svg width="34" height="8" aria-hidden="true">
+                <line
+                  x1="1"
+                  y1="4"
+                  x2="33"
+                  y2="4"
+                  stroke="#141414"
+                  strokeWidth="2.25"
+                  strokeLinecap="round"
+                  strokeDasharray="6 4"
+                />
+              </svg>
+              if / maybe
+            </div>
+            <div className="mw-legend-row">
+              <svg width="34" height="8" aria-hidden="true">
+                <line
+                  x1="1"
+                  y1="4"
+                  x2="33"
+                  y2="4"
+                  stroke="#141414"
+                  strokeWidth="2.25"
+                  strokeLinecap="round"
+                  strokeDasharray="1 5"
+                />
+              </svg>
+              aside
+            </div>
+          </div>
         </div>
         <div className="mw-panel">
           {selected ? (

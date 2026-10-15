@@ -1,52 +1,17 @@
 {
-  "name": "@microx-technologies/microwireflow",
+  "name": "microwireflow-monorepo",
   "version": "0.1.0",
-  "description": "Code-first wireflow docs library: plain TSX screens, declarative flow wiring, live React Flow canvas.",
+  "private": true,
   "type": "module",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microx-technologies/microwireflow.git"
-  },
   "workspaces": [
+    "packages/*",
     "apps/*"
   ],
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
   "scripts": {
-    "build": "tsup && cp src/styles.css dist/styles.css",
-    "prepack": "bun run build",
-    "check": "biome check --write && tsc --noEmit && tsc --noEmit -p apps/demo/tsconfig.json",
-    "test": "vitest run",
-    "dev": "tsup --watch"
-  },
-  "dependencies": {
-    "elkjs": "^0.11.0",
-    "html-to-image": "^1.11.13"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0",
-    "@xyflow/react": "^12"
+    "check": "biome check --write && bun --filter '*' check"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
-    "@types/bun": "latest",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "^6.0.0",
-    "@xyflow/react": "^12.3.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "tsup": "^8.3.0",
-    "typescript": "^5",
-    "vite": "^8.0.0",
-    "vitest": "^5.0.5"
-  },
-  "license": "AGPL-3.0"
+    "typescript": "^5"
+  }
 }

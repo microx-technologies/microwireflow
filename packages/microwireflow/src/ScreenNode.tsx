@@ -51,11 +51,22 @@ export function ScreenNode(props: NodeProps<ScreenNodeType>) {
   }, [props.id, callbacks]);
 
   const kind = flowNode.kind === "" ? undefined : flowNode.kind;
+  const kindClass =
+    kind === undefined
+      ? ""
+      : kind.includes("error")
+        ? " mw-kind-error"
+        : kind.includes("modal")
+          ? " mw-kind-modal"
+          : kind.includes("popup")
+            ? " mw-kind-popup"
+            : "";
 
   return (
     <div
       className={
         "mw-node" +
+        kindClass +
         (props.selected ? " mw-selected" : "") +
         (highlighted ? " mw-highlighted" : "")
       }

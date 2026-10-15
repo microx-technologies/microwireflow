@@ -1,7 +1,8 @@
-import { Home } from "@demo/screens/Home.tsx";
-import { Login } from "@demo/screens/Login.tsx";
-import { Reset } from "@demo/screens/Reset.tsx";
 import { defineFlow } from "microwireflow";
+import { Home } from "@/screens/Home.tsx";
+import { Login } from "@/screens/Login.tsx";
+import { LogoutConfirm } from "@/screens/LogoutConfirm.tsx";
+import { Reset } from "@/screens/Reset.tsx";
 
 export const authFlow = defineFlow({
   nodes: [
@@ -10,16 +11,31 @@ export const authFlow = defineFlow({
       title: "Login",
       kind: "<<screen>>",
       component: <Login />,
-      notes: "Entry point.",
+      notes:
+        "Entry point. Submit branches on validity; both leaves stay visible.",
     },
     {
       id: "login-error",
       title: "Login",
       kind: "<<error>>",
-      component: <Login error="Bad credentials" />,
-      notes: "Error state, same file.",
+      component: <Login error="Bad credentials — try again." />,
+      notes: "Error state, same file. Red-inked to read as a correction.",
     },
-    { id: "home", title: "Home", kind: "<<screen>>", component: <Home /> },
+    {
+      id: "home",
+      title: "Home",
+      kind: "<<screen>>",
+      component: <Home />,
+      notes: "Signed-in landing. Logout asks first via a modal.",
+    },
+    {
+      id: "logout-confirm",
+      title: "Confirm logout",
+      kind: "<<modal>>",
+      component: <LogoutConfirm />,
+      notes:
+        "Modal kind proof: double-ruled badge. Confirm exits, cancel returns.",
+    },
     {
       id: "reset",
       title: "Reset",
@@ -44,7 +60,20 @@ export const authFlow = defineFlow({
       lineStyle: "dashed",
     },
     { from: "login", trigger: "forgot", to: "reset", lineStyle: "dotted" },
-    { from: "home", trigger: "logout", to: "login" },
+    { from: "home", trigger: "logout", to: "logout-confirm", label: "tap" },
+    {
+      from: "logout-confirm",
+      trigger: "confirm",
+      to: "login",
+      label: "yes, out",
+    },
+    {
+      from: "logout-confirm",
+      trigger: "cancel",
+      to: "home",
+      label: "stay",
+      lineStyle: "dashed",
+    },
     { from: "reset", trigger: "send", to: "login" },
   ],
 });
