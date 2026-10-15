@@ -1,0 +1,34 @@
+import type { LineStyle } from "@/types.ts";
+
+export const MW_NODE_WIDTH = 360;
+export const MW_ELK_HEIGHT_EST = 320;
+export const MW_ELK_OPTIONS = {
+  "elk.algorithm": "layered",
+  "elk.direction": "RIGHT",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "80",
+  "elk.spacing.nodeNode": "50",
+  "elk.layered.spacing.edgeNodeBetweenLayers": "40",
+} as const;
+export const MW_DASH: Record<LineStyle, string | undefined> = {
+  solid: undefined,
+  dashed: "6 4",
+  dotted: "1 5",
+};
+export const MW_TARGET_HANDLE_ID = "__target";
+export const MW_EMPTY_TRIGGER_HANDLE_ID = "__empty";
+export const MW_FOCUS_DURATION = 400;
+export const MW_FIT_PADDING = 0.2;
+export const MW_EXPORT_PIXEL_RATIO = 2;
+export const MW_EXPORT_PADDING = 40;
+export const MW_GRID_FALLBACK_COLS = 4;
+export const MW_GRID_FALLBACK_DX = 420;
+export const MW_GRID_FALLBACK_DY = 380;
+
+export function mwEdgeId(
+  from: string,
+  trigger: string,
+  to: string,
+  index: number,
+): string {
+  return `${from}:${trigger}->${to}#${index}`;
+}

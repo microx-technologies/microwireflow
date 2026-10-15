@@ -1,16 +1,20 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "target": "ESNext",
     "module": "esnext",
     "moduleDetection": "force",
     "noEmit": true,
     "types": ["bun"],
 
+    "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"],
+      "@demo/*": ["./apps/demo/src/*"],
+      "microwireflow": ["./src/index.ts"],
+      "microwireflow/styles.css": ["./src/styles.css"]
     },
     "verbatimModuleSyntax": true,
 
@@ -19,5 +23,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true
-  }
+  },
+  "include": ["src", "tsup.config.ts", "vitest.config.ts"]
 }
