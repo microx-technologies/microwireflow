@@ -1,0 +1,14 @@
+{
+  "name": "microwireflow",
+  "type": "module",
+  "scripts": {
+    "check": "biome check --write && tsc --noEmit"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
