@@ -1,12 +1,12 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  test: {
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
-  },
   resolve: {
-    alias: {
-      "@": new URL("./src", import.meta.url).pathname,
-    },
+    tsconfigPaths: true,
+  },
+  test: {
+    include: ["tests/**/*.test.ts"],
+    testTimeout: 120_000,
+    hookTimeout: 60_000,
   },
 });

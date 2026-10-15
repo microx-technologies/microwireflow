@@ -1,4 +1,4 @@
-import ELK from "elkjs/lib/elk.bundled.js";
+import ELK from "elkjs";
 import {
   MW_ELK_HEIGHT_EST,
   MW_ELK_OPTIONS,

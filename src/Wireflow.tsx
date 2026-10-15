@@ -1,4 +1,5 @@
-import type { Edge } from "@xyflow/react";
+import type { Edge, NodeChange } from "@xyflow/react";
+
 import {
   Background,
   Controls,
@@ -12,6 +13,7 @@ import {
 import * as React from "react";
 import {
   MW_DASH,
+  MW_EDGE_INTERACTION_WIDTH,
   MW_ELK_HEIGHT_EST,
   MW_FIT_PADDING,
   MW_FOCUS_DURATION,
@@ -21,12 +23,17 @@ import {
 } from "@/constants.ts";
 import { exportImage } from "@/exportImage.ts";
 import { gridFallbackLayout, layoutWithElk, mergePositions } from "@/layout.ts";
-import { currentPositionsFromNodes, serializePositions } from "@/positions.ts";
+import {
+  currentPositionsFromNodes,
+  positionsSignature,
+  serializePositions,
+} from "@/positions.ts";
 import {
   SCREEN_NODE_TYPE,
   ScreenNode,
   type ScreenNodeType,
 } from "@/ScreenNode.tsx";
+import { syncFlowNodes } from "@/syncNodes.ts";
 import { ScreenNodeCallbacksContext, sameCounts } from "@/triggerRegistry.ts";
 import type { Flow, FlowPositions, WireflowProps } from "@/types.ts";
 import {
@@ -114,24 +121,73 @@ function CanvasInner(props: CanvasInnerProps) {
     return m;
   }, [flow]);
 
+  const flowPositions = flow.positions;
+  const flowNodes = flow.nodes;
+  const flowEdges = flow.edges;
   const finalPositions = React.useMemo(
-    () => mergePositions(nodeIds, flow.positions, computed),
-    [nodeIds, flow.positions, computed],
+    () => mergePositions(nodeIds, flowPositions, computed),
+    [nodeIds, flowPositions, computed],
   );
+  // Content key: pasted `positions` prop wins over session drags only when
+  // its content actually changes — never on parent re-render.
+  const positionsPropKey = `${nodeIds.join("|")}::${positionsSignature(flowPositions)}`;
+  // Nodes the user has placed by hand this session. Async layout arrivals
+  // and `flow` identity changes MUST NOT move these; only an explicit
+  // Auto-layout or a changed `positions` prop resets the set.
+  const draggedRef = React.useRef<Set<string>>(new Set());
+
+  const validIndices = React.useMemo(
+    () => validEdgeIndices(flow, registries),
+    [registries, flow],
+  );
+  const validSet = React.useMemo(() => new Set(validIndices), [validIndices]);
+  const validSetRef = React.useRef(validSet);
+  validSetRef.current = validSet;
+  const hoveredEdgeIds = React.useMemo(() => {
+    if (!hover) {
+      return new Set<string>();
+    }
+    if (hover.kind === "edge") {
+      return new Set([hover.edgeId]);
+    }
+    const ids = new Set<string>();
+    flowEdges.forEach((e, i) => {
+      if (
+        validSet.has(i) &&
+        e.from === hover.nodeId &&
+        e.trigger === hover.triggerId
+      ) {
+        ids.add(mwEdgeId(e.from, e.trigger, e.to, i));
+      }
+    });
+    return ids;
+  }, [hover, flowEdges, validSet]);
+
+  const highlightedNodeIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    flowEdges.forEach((e, i) => {
+      if (
+        validSet.has(i) &&
+        hoveredEdgeIds.has(mwEdgeId(e.from, e.trigger, e.to, i))
+      ) {
+        ids.add(e.from);
+        ids.add(e.to);
+      }
+    });
+    return ids;
+  }, [flowEdges, validSet, hoveredEdgeIds]);
 
   React.useEffect(() => {
     let live = true;
-    const missing = nodeIds.filter((id) => flow.positions?.[id] === undefined);
+    const missing = nodeIds.filter((id) => flowPositions?.[id] === undefined);
     if (missing.length === 0) {
       setComputed({});
       return () => {
         live = false;
       };
     }
-    layoutWithElk(
-      missing,
-      flow.edges.map((e) => ({ from: e.from, to: e.to })),
-    )
+    const edgeInputs = flowEdges.map((e) => ({ from: e.from, to: e.to }));
+    layoutWithElk(missing, edgeInputs)
       .then((pos) => {
         if (live) {
           setComputed(pos);
@@ -151,65 +207,56 @@ function CanvasInner(props: CanvasInnerProps) {
     };
   }, [flow, nodeIds]);
 
-  const validIndices = React.useMemo(
-    () => validEdgeIndices(flow, registries),
-    [flow, registries],
-  );
-  const validSet = React.useMemo(() => new Set(validIndices), [validIndices]);
-  const validSetRef = React.useRef(validSet);
-  validSetRef.current = validSet;
-  const hoveredEdgeIds = React.useMemo(() => {
-    if (!hover) {
-      return new Set<string>();
-    }
-    if (hover.kind === "edge") {
-      return new Set([hover.edgeId]);
-    }
-    const ids = new Set<string>();
-    flow.edges.forEach((e, i) => {
-      if (
-        validSet.has(i) &&
-        e.from === hover.nodeId &&
-        e.trigger === hover.triggerId
-      ) {
-        ids.add(mwEdgeId(e.from, e.trigger, e.to, i));
-      }
-    });
-    return ids;
-  }, [hover, flow, validSet]);
+  const finalPositionsRef = React.useRef(finalPositions);
+  finalPositionsRef.current = finalPositions;
 
-  const highlightedNodeIds = React.useMemo(() => {
-    const ids = new Set<string>();
-    flow.edges.forEach((e, i) => {
-      if (
-        validSet.has(i) &&
-        hoveredEdgeIds.has(mwEdgeId(e.from, e.trigger, e.to, i))
-      ) {
-        ids.add(e.from);
-        ids.add(e.to);
-      }
-    });
-    return ids;
-  }, [flow, validSet, hoveredEdgeIds]);
-
+  // Single node pipeline: structural sync (add/drop/refresh) PLUS position
+  // apply. Merging avoids mount races between separate effects and keeps one
+  // invariant: existing nodes NEVER move except via engine positions for ids
+  // the user has not placed by hand, explicit Auto-layout, or a changed
+  // `positions` prop.
+  const prevPropKeyRef = React.useRef(positionsPropKey);
   React.useEffect(() => {
-    setRfNodes(
-      flow.nodes.map(
-        (n) =>
-          ({
-            id: n.id,
-            type: SCREEN_NODE_TYPE,
-            position: finalPositions[n.id] ?? { x: 0, y: 0 },
-            data: { flowNode: n, highlighted: highlightedNodeIds.has(n.id) },
-          }) satisfies ScreenNodeType,
+    if (prevPropKeyRef.current !== positionsPropKey) {
+      prevPropKeyRef.current = positionsPropKey;
+      draggedRef.current.clear();
+    }
+    setRfNodes((prev) =>
+      syncFlowNodes(
+        prev,
+        flowNodes,
+        (id) => finalPositionsRef.current[id],
+        (id) => highlightedNodeIds.has(id),
       ),
     );
-  }, [flow, finalPositions, highlightedNodeIds, setRfNodes]);
+  }, [flow, highlightedNodeIds, setRfNodes]);
+
+  React.useEffect(() => {
+    setRfNodes((prev) => {
+      let moved = false;
+      const next = prev.map((n) => {
+        const p = finalPositionsRef.current[n.id];
+        const shouldMove =
+          p !== undefined &&
+          !draggedRef.current.has(n.id) &&
+          (n.position.x !== p.x || n.position.y !== p.y);
+        if (shouldMove && p !== undefined) {
+          moved = true;
+          return { ...n, position: { x: p.x, y: p.y } };
+        }
+        return n;
+      });
+      if (!moved) {
+        return prev;
+      }
+      return next;
+    });
+  }, [flow, finalPositions, setRfNodes]);
 
   React.useEffect(() => {
     setRfEdges(
       validIndices.map((i) => {
-        const e = flow.edges[i] as (typeof flow.edges)[number];
+        const e = flowEdges[i] as (typeof flowEdges)[number];
         const id = mwEdgeId(e.from, e.trigger, e.to, i);
         return {
           id,
@@ -221,12 +268,13 @@ function CanvasInner(props: CanvasInnerProps) {
           label: e.label,
           labelBgPadding: [8, 4] as [number, number],
           labelBgBorderRadius: 4,
+          interactionWidth: MW_EDGE_INTERACTION_WIDTH,
           style: { strokeDasharray: MW_DASH[e.lineStyle ?? "solid"] },
           className: hoveredEdgeIds.has(id) ? "mw-edge-hovered" : undefined,
         } satisfies Edge;
       }),
     );
-  }, [flow, validIndices, hoveredEdgeIds, setRfEdges]);
+  }, [flowEdges, validIndices, hoveredEdgeIds, setRfEdges]);
 
   React.useEffect(() => {
     const phase1 = validateFlowIds(flow);
@@ -240,6 +288,18 @@ function CanvasInner(props: CanvasInnerProps) {
       }
     }
   }, [flow, registries]);
+
+  const handleNodesChange = React.useCallback(
+    (changes: NodeChange<ScreenNodeType>[]) => {
+      for (const c of changes) {
+        if (c.type === "position" && (c.dragging ?? false)) {
+          draggedRef.current.add(c.id);
+        }
+      }
+      onNodesChange(changes);
+    },
+    [onNodesChange],
+  );
 
   const onNodeSelect = props.onNodeSelect;
   const focusNode = React.useCallback(
@@ -448,9 +508,11 @@ function CanvasInner(props: CanvasInnerProps) {
           type="button"
           className="mw-btn"
           onClick={() => {
+            // Explicit user action: engine output wins, session drags reset.
+            draggedRef.current.clear();
             layoutWithElk(
               nodeIds,
-              flow.edges.map((e) => ({ from: e.from, to: e.to })),
+              flowEdges.map((e) => ({ from: e.from, to: e.to })),
             )
               .then((pos) => setComputed(pos))
               .catch((err: unknown) => {
@@ -491,7 +553,7 @@ function CanvasInner(props: CanvasInnerProps) {
           <ReactFlow<ScreenNodeType, Edge>
             nodes={rfNodes}
             edges={rfEdges}
-            onNodesChange={onNodesChange}
+            onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
             fitView
@@ -501,6 +563,7 @@ function CanvasInner(props: CanvasInnerProps) {
             nodesDraggable
             nodesConnectable={false}
             elementsSelectable
+            elevateEdgesOnSelect
             onNodeClick={(_, n) => {
               setSelectedId(n.id);
               onNodeSelect?.(n.id);

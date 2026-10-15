@@ -10,6 +10,19 @@ export function currentPositionsFromNodes(
   return out;
 }
 
+export function positionsSignature(p: FlowPositions | undefined): string {
+  if (!p) {
+    return "";
+  }
+  return Object.keys(p)
+    .sort()
+    .map((k) => {
+      const v = p[k];
+      return `${k}:${Math.round(v?.x ?? 0)},${Math.round(v?.y ?? 0)}`;
+    })
+    .join(";");
+}
+
 export function serializePositions(p: FlowPositions): string {
   const keys = Object.keys(p).sort();
   const lines = keys.map((k) => {

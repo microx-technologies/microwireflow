@@ -23,6 +23,7 @@ export const MW_EXPORT_PADDING = 40;
 export const MW_GRID_FALLBACK_COLS = 4;
 export const MW_GRID_FALLBACK_DX = 420;
 export const MW_GRID_FALLBACK_DY = 380;
+export const MW_EDGE_INTERACTION_WIDTH = 8;
 
 export function mwEdgeId(
   from: string,

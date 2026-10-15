@@ -4,7 +4,7 @@
   "description": "Code-first wireflow docs library: plain TSX screens, declarative flow wiring, live React Flow canvas.",
   "type": "module",
   "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
   ],
   "scripts": {
     "build": "tsup && cp src/styles.css dist/styles.css",
+    "prepack": "bun run build",
     "check": "biome check --write && tsc --noEmit && tsc --noEmit -p apps/demo/tsconfig.json",
     "test": "vitest run",
     "dev": "tsup --watch"
@@ -40,14 +41,12 @@
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.0",
     "@xyflow/react": "^12.3.0",
-    "elkjs": "^0.11.0",
-    "html-to-image": "^1.11.13",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tsup": "^8.3.0",
     "typescript": "^5",
     "vite": "^8.0.0",
-    "vitest": "^3.0.0"
+    "vitest": "^5.0.5"
   },
   "license": "AGPL-3.0"
 }

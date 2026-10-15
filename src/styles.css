@@ -259,6 +259,17 @@
   font-size: 12px;
 }
 
+/* Connectors stay visible where they cross screen cards: the edges layer
+   paints above the nodes layer. elevateEdgesOnSelect (z 1000) keeps selected
+   edges on top; interactionWidth is narrowed in code so the wider hit strip
+   doesn't swallow node clicks/drags. */
+.mw .react-flow__edges {
+  z-index: 10;
+}
+.mw .react-flow__edge.selectable.selected {
+  z-index: 1000;
+}
+
 .react-flow__edge.mw-edge-hovered path {
   stroke: #6366f1;
   stroke-width: 2.5;
