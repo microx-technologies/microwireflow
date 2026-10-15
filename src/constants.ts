@@ -1,7 +1,10 @@
-import type { LineStyle } from "@/types.ts";
+import type { EdgeRouting, LineStyle } from "@/types.ts";
 
 export const MW_NODE_WIDTH = 360;
 export const MW_ELK_HEIGHT_EST = 320;
+export const MW_DEFAULT_EDGE_ROUTING: EdgeRouting = "smoothstep";
+export const MW_EDGE_BORDER_RADIUS = 8;
+export const MW_EDGE_OFFSET = 20;
 export const MW_ELK_OPTIONS = {
   "elk.algorithm": "layered",
   "elk.direction": "RIGHT",

@@ -1,5 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { MW_DASH, mwEdgeId } from "@/constants.ts";
+import {
+  MW_DASH,
+  MW_DEFAULT_EDGE_ROUTING,
+  MW_EDGE_BORDER_RADIUS,
+  MW_EDGE_OFFSET,
+  mwEdgeId,
+} from "@/constants.ts";
+import { createBuiltInEdge } from "@/edges.ts";
 import { currentPositionsFromNodes, serializePositions } from "@/positions.ts";
 
 describe("positions", () => {
@@ -33,5 +40,74 @@ describe("edges", () => {
     expect(mwEdgeId("login", "submit", "login-error", 1)).not.toBe(
       mwEdgeId("login", "submit", "home", 0),
     );
+  });
+
+  test("default edge routing is smoothstep", () => {
+    expect(MW_DEFAULT_EDGE_ROUTING).toBe("smoothstep");
+  });
+
+  test("createBuiltInEdge configures smoothstep with borderRadius and offset", () => {
+    const edge = createBuiltInEdge("smoothstep", {
+      id: "e1",
+      source: "login",
+      sourceHandle: "submit",
+      target: "home",
+      targetHandle: "__target",
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      interactionWidth: 8,
+      style: {},
+    });
+    expect(edge.type).toBe("smoothstep");
+    if (edge.type === "smoothstep") {
+      expect(edge.pathOptions?.borderRadius).toBe(MW_EDGE_BORDER_RADIUS);
+      expect(edge.pathOptions?.offset).toBe(MW_EDGE_OFFSET);
+    }
+  });
+
+  test("createBuiltInEdge configures step with offset", () => {
+    const edge = createBuiltInEdge("step", {
+      id: "e2",
+      source: "login",
+      sourceHandle: "submit",
+      target: "home",
+      targetHandle: "__target",
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      interactionWidth: 8,
+      style: {},
+    });
+    expect(edge.type).toBe("step");
+    if (edge.type === "step") {
+      expect(edge.pathOptions?.offset).toBe(MW_EDGE_OFFSET);
+    }
+  });
+
+  test("createBuiltInEdge configures bezier and straight", () => {
+    const bezier = createBuiltInEdge("bezier", {
+      id: "e3",
+      source: "login",
+      sourceHandle: "submit",
+      target: "home",
+      targetHandle: "__target",
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      interactionWidth: 8,
+      style: {},
+    });
+    expect(bezier.type).toBe("default");
+
+    const straight = createBuiltInEdge("straight", {
+      id: "e4",
+      source: "login",
+      sourceHandle: "submit",
+      target: "home",
+      targetHandle: "__target",
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      interactionWidth: 8,
+      style: {},
+    });
+    expect(straight.type).toBe("straight");
   });
 });

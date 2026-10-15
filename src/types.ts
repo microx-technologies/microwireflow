@@ -2,6 +2,16 @@ import type * as React from "react";
 
 export type LineStyle = "solid" | "dashed" | "dotted";
 
+export type EdgeRouting = "smoothstep" | "step" | "bezier" | "straight";
+
+export type TriggerProps = {
+  id: string;
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  fullWidth?: boolean;
+};
+
 export type FlowNode = {
   id: string;
   title: string;
@@ -16,6 +26,7 @@ export type FlowEdge = {
   to: string;
   label?: string;
   lineStyle?: LineStyle;
+  routing?: EdgeRouting;
 };
 
 export type FlowPositions = Record<string, { x: number; y: number }>;
@@ -33,6 +44,7 @@ export type WireflowProps = {
   showMinimap?: boolean;
   showSearch?: boolean;
   showControls?: boolean;
+  edgeRouting?: EdgeRouting;
   onPositionsExport?: (positions: FlowPositions, snippet: string) => void;
   onNodeSelect?: (nodeId: string | null) => void;
 };

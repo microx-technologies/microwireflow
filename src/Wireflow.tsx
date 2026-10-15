@@ -1,4 +1,4 @@
-import type { Edge, NodeChange } from "@xyflow/react";
+import type { BuiltInEdge, NodeChange } from "@xyflow/react";
 
 import {
   Background,
@@ -13,6 +13,7 @@ import {
 import * as React from "react";
 import {
   MW_DASH,
+  MW_DEFAULT_EDGE_ROUTING,
   MW_EDGE_INTERACTION_WIDTH,
   MW_ELK_HEIGHT_EST,
   MW_FIT_PADDING,
@@ -21,6 +22,7 @@ import {
   MW_TARGET_HANDLE_ID,
   mwEdgeId,
 } from "@/constants.ts";
+import { createBuiltInEdge } from "@/edges.ts";
 import { exportImage } from "@/exportImage.ts";
 import { gridFallbackLayout, layoutWithElk, mergePositions } from "@/layout.ts";
 import {
@@ -35,7 +37,12 @@ import {
 } from "@/ScreenNode.tsx";
 import { syncFlowNodes } from "@/syncNodes.ts";
 import { ScreenNodeCallbacksContext, sameCounts } from "@/triggerRegistry.ts";
-import type { Flow, FlowPositions, WireflowProps } from "@/types.ts";
+import type {
+  EdgeRouting,
+  Flow,
+  FlowPositions,
+  WireflowProps,
+} from "@/types.ts";
 import {
   type FlowError,
   validateFlowIds,
@@ -61,6 +68,7 @@ type CanvasInnerProps = {
   showMinimap: boolean;
   showSearch: boolean;
   showControls: boolean;
+  edgeRouting?: EdgeRouting;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
   onPositionsExport?: (positions: FlowPositions, snippet: string) => void;
   onNodeSelect?: (nodeId: string | null) => void;
@@ -101,7 +109,7 @@ function CanvasInner(props: CanvasInnerProps) {
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<ScreenNodeType>(
     [],
   );
-  const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<BuiltInEdge>([]);
   const [computed, setComputed] = React.useState<FlowPositions>({});
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [hover, setHover] = React.useState<HoverState | null>(null);
@@ -128,12 +136,7 @@ function CanvasInner(props: CanvasInnerProps) {
     () => mergePositions(nodeIds, flowPositions, computed),
     [nodeIds, flowPositions, computed],
   );
-  // Content key: pasted `positions` prop wins over session drags only when
-  // its content actually changes — never on parent re-render.
   const positionsPropKey = `${nodeIds.join("|")}::${positionsSignature(flowPositions)}`;
-  // Nodes the user has placed by hand this session. Async layout arrivals
-  // and `flow` identity changes MUST NOT move these; only an explicit
-  // Auto-layout or a changed `positions` prop resets the set.
   const draggedRef = React.useRef<Set<string>>(new Set());
 
   const validIndices = React.useMemo(
@@ -205,16 +208,11 @@ function CanvasInner(props: CanvasInnerProps) {
     return () => {
       live = false;
     };
-  }, [flow, nodeIds]);
+  }, [nodeIds, flowPositions, flowEdges]);
 
   const finalPositionsRef = React.useRef(finalPositions);
   finalPositionsRef.current = finalPositions;
 
-  // Single node pipeline: structural sync (add/drop/refresh) PLUS position
-  // apply. Merging avoids mount races between separate effects and keeps one
-  // invariant: existing nodes NEVER move except via engine positions for ids
-  // the user has not placed by hand, explicit Auto-layout, or a changed
-  // `positions` prop.
   const prevPropKeyRef = React.useRef(positionsPropKey);
   React.useEffect(() => {
     if (prevPropKeyRef.current !== positionsPropKey) {
@@ -229,13 +227,13 @@ function CanvasInner(props: CanvasInnerProps) {
         (id) => highlightedNodeIds.has(id),
       ),
     );
-  }, [flow, highlightedNodeIds, setRfNodes]);
+  }, [positionsPropKey, flowNodes, highlightedNodeIds, setRfNodes]);
 
   React.useEffect(() => {
     setRfNodes((prev) => {
       let moved = false;
       const next = prev.map((n) => {
-        const p = finalPositionsRef.current[n.id];
+        const p = finalPositions[n.id];
         const shouldMove =
           p !== undefined &&
           !draggedRef.current.has(n.id) &&
@@ -251,30 +249,32 @@ function CanvasInner(props: CanvasInnerProps) {
       }
       return next;
     });
-  }, [flow, finalPositions, setRfNodes]);
+  }, [finalPositions, setRfNodes]);
 
+  const edgeRouting = props.edgeRouting;
   React.useEffect(() => {
+    const defaultRouting = edgeRouting ?? MW_DEFAULT_EDGE_ROUTING;
     setRfEdges(
       validIndices.map((i) => {
         const e = flowEdges[i] as (typeof flowEdges)[number];
         const id = mwEdgeId(e.from, e.trigger, e.to, i);
-        return {
+        const routing = e.routing ?? defaultRouting;
+        return createBuiltInEdge(routing, {
           id,
           source: e.from,
           sourceHandle: e.trigger === "" ? "__empty" : e.trigger,
           target: e.to,
           targetHandle: MW_TARGET_HANDLE_ID,
-          type: "default",
           label: e.label,
           labelBgPadding: [8, 4] as [number, number],
           labelBgBorderRadius: 4,
           interactionWidth: MW_EDGE_INTERACTION_WIDTH,
           style: { strokeDasharray: MW_DASH[e.lineStyle ?? "solid"] },
           className: hoveredEdgeIds.has(id) ? "mw-edge-hovered" : undefined,
-        } satisfies Edge;
+        });
       }),
     );
-  }, [flowEdges, validIndices, hoveredEdgeIds, setRfEdges]);
+  }, [flowEdges, validIndices, hoveredEdgeIds, setRfEdges, edgeRouting]);
 
   React.useEffect(() => {
     const phase1 = validateFlowIds(flow);
@@ -316,10 +316,15 @@ function CanvasInner(props: CanvasInnerProps) {
         duration: MW_FOCUS_DURATION,
       });
       setSelectedId(id);
+      setRfNodes((prev) =>
+        prev.map((n) =>
+          n.selected !== (n.id === id) ? { ...n, selected: n.id === id } : n,
+        ),
+      );
       onNodeSelect?.(id);
       setPicker(null);
     },
-    [getInternalNode, getNode, getZoom, setCenter, onNodeSelect],
+    [getInternalNode, getNode, getZoom, setCenter, onNodeSelect, setRfNodes],
   );
 
   const onRegistryChange = React.useCallback(
@@ -384,6 +389,19 @@ function CanvasInner(props: CanvasInnerProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const [activeIndex, setActiveIndex] = React.useState<number>(-1);
+  const searchRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
   const matches = React.useMemo(() => {
     const q = query.trim().toLowerCase();
     if (q === "") {
@@ -391,9 +409,44 @@ function CanvasInner(props: CanvasInnerProps) {
     }
     return flow.nodes.filter(
       (n) =>
-        n.title.toLowerCase().includes(q) || n.id.toLowerCase().includes(q),
+        n.title.toLowerCase().includes(q) ||
+        n.id.toLowerCase().includes(q) ||
+        (n.kind?.toLowerCase().includes(q) ?? false),
     );
   }, [flow, query]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!searchOpen) {
+        setSearchOpen(true);
+      }
+      if (matches.length > 0) {
+        setActiveIndex((prev) => (prev + 1) % matches.length);
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!searchOpen) {
+        setSearchOpen(true);
+      }
+      if (matches.length > 0) {
+        setActiveIndex((prev) => (prev <= 0 ? matches.length - 1 : prev - 1));
+      }
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const targetMatch =
+        activeIndex >= 0 && activeIndex < matches.length
+          ? matches[activeIndex]
+          : matches[0];
+      if (targetMatch) {
+        focusNode(targetMatch.id);
+        setSearchOpen(false);
+      }
+    } else if (e.key === "Escape") {
+      setSearchOpen(false);
+      e.currentTarget.blur();
+    }
+  };
 
   const currentPositions = React.useMemo(
     () => currentPositionsFromNodes(rfNodes),
@@ -461,35 +514,59 @@ function CanvasInner(props: CanvasInnerProps) {
     <ScreenNodeCallbacksContext.Provider value={callbacks}>
       <div className="mw-toolbar">
         {props.showSearch ? (
-          <div className="mw-search">
+          <div className="mw-search" ref={searchRef}>
             <input
               value={query}
               placeholder="Search screens…"
+              onFocus={() => {
+                if (query.trim() !== "") {
+                  setSearchOpen(true);
+                }
+              }}
               onChange={(e) => {
                 setQuery(e.target.value);
                 setSearchOpen(true);
+                setActiveIndex(-1);
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && matches[0]) {
-                  focusNode(matches[0].id);
-                  setSearchOpen(false);
-                }
-              }}
+              onKeyDown={handleSearchKeyDown}
             />
-            {searchOpen && matches.length > 1 ? (
+            {query.length > 0 ? (
+              <button
+                type="button"
+                className="mw-search-clear"
+                aria-label="Clear search"
+                onClick={() => {
+                  setQuery("");
+                  setSearchOpen(false);
+                  setActiveIndex(-1);
+                }}
+              >
+                ×
+              </button>
+            ) : null}
+            {searchOpen && query.trim() !== "" ? (
               <div className="mw-search-results">
-                {matches.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => {
-                      focusNode(m.id);
-                      setSearchOpen(false);
-                    }}
-                  >
-                    {m.title} <span className="mw-picker-label">{m.id}</span>
-                  </button>
-                ))}
+                {matches.length > 0 ? (
+                  matches.map((m, idx) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      className={
+                        idx === activeIndex ? "mw-search-active" : undefined
+                      }
+                      onClick={() => {
+                        focusNode(m.id);
+                        setSearchOpen(false);
+                      }}
+                      onMouseEnter={() => setActiveIndex(idx)}
+                    >
+                      <span>{m.title}</span>
+                      <span className="mw-picker-label">{m.id}</span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="mw-search-empty">No matching screens</div>
+                )}
               </div>
             ) : null}
           </div>
@@ -508,7 +585,6 @@ function CanvasInner(props: CanvasInnerProps) {
           type="button"
           className="mw-btn"
           onClick={() => {
-            // Explicit user action: engine output wins, session drags reset.
             draggedRef.current.clear();
             layoutWithElk(
               nodeIds,
@@ -550,7 +626,7 @@ function CanvasInner(props: CanvasInnerProps) {
       </div>
       <div className="mw-canvas-row">
         <div className="mw-flow">
-          <ReactFlow<ScreenNodeType, Edge>
+          <ReactFlow<ScreenNodeType, BuiltInEdge>
             nodes={rfNodes}
             edges={rfEdges}
             onNodesChange={handleNodesChange}
@@ -674,6 +750,7 @@ export function Wireflow(props: WireflowProps) {
           showMinimap={props.showMinimap ?? true}
           showSearch={props.showSearch ?? true}
           showControls={props.showControls ?? true}
+          edgeRouting={props.edgeRouting}
           wrapperRef={wrapperRef}
           onPositionsExport={props.onPositionsExport}
           onNodeSelect={props.onNodeSelect}
