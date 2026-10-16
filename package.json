@@ -8,7 +8,9 @@
     "apps/*"
   ],
   "scripts": {
-    "check": "biome check --write && bun --filter '*' check"
+    "build": "bun --filter '*' build",
+    "check": "biome check --write && bun --filter '*' check",
+    "test": "bun --filter '*' test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
