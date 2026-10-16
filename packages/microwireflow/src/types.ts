@@ -4,6 +4,8 @@ export type LineStyle = "solid" | "dashed" | "dotted";
 
 export type EdgeRouting = "smoothstep" | "step" | "bezier" | "straight";
 
+export type TargetSide = "left" | "top" | "right" | "bottom";
+
 export type TriggerProps = {
   id: string;
   children: React.ReactNode;
@@ -27,6 +29,9 @@ export type FlowEdge = {
   label?: string;
   lineStyle?: LineStyle;
   routing?: EdgeRouting;
+  avoidCollisions?: boolean;
+  lineHops?: boolean;
+  targetSide?: TargetSide;
 };
 
 export type FlowPositions = Record<string, { x: number; y: number }>;
@@ -45,6 +50,8 @@ export type WireflowProps = {
   showSearch?: boolean;
   showControls?: boolean;
   edgeRouting?: EdgeRouting;
+  avoidCollisions?: boolean;
+  lineHops?: boolean;
   onPositionsExport?: (positions: FlowPositions, snippet: string) => void;
   onNodeSelect?: (nodeId: string | null) => void;
 };

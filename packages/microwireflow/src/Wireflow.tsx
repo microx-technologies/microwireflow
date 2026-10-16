@@ -1,5 +1,5 @@
-import type { BuiltInEdge, NodeChange } from "@xyflow/react";
-
+import { SmartEdgeProvider } from "@tisoap/react-flow-smart-edge";
+import type { NodeChange } from "@xyflow/react";
 import {
   Background,
   BackgroundVariant,
@@ -15,15 +15,21 @@ import * as React from "react";
 import {
   MW_DASH,
   MW_DEFAULT_EDGE_ROUTING,
+  MW_EDGE_GRID_RATIO,
   MW_EDGE_INTERACTION_WIDTH,
+  MW_EDGE_NODE_PADDING,
   MW_ELK_HEIGHT_EST,
   MW_FIT_PADDING,
   MW_FOCUS_DURATION,
   MW_NODE_WIDTH,
-  MW_TARGET_HANDLE_ID,
   mwEdgeId,
 } from "@/constants.ts";
-import { createBuiltInEdge } from "@/edges.ts";
+import {
+  createFlowEdge,
+  createSmartEdgeTypes,
+  type FlowEdgeInstance,
+  resolveTargetPort,
+} from "@/edges.ts";
 import { exportImage } from "@/exportImage.ts";
 import { gridFallbackLayout, layoutWithElk, mergePositions } from "@/layout.ts";
 import {
@@ -70,6 +76,8 @@ type CanvasInnerProps = {
   showSearch: boolean;
   showControls: boolean;
   edgeRouting?: EdgeRouting;
+  avoidCollisions?: boolean;
+  lineHops?: boolean;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
   onPositionsExport?: (positions: FlowPositions, snippet: string) => void;
   onNodeSelect?: (nodeId: string | null) => void;
@@ -110,7 +118,9 @@ function CanvasInner(props: CanvasInnerProps) {
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<ScreenNodeType>(
     [],
   );
-  const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<BuiltInEdge>([]);
+  const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<FlowEdgeInstance>(
+    [],
+  );
   const [computed, setComputed] = React.useState<FlowPositions>({});
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [hover, setHover] = React.useState<HoverState | null>(null);
@@ -123,6 +133,20 @@ function CanvasInner(props: CanvasInnerProps) {
   const [showPositions, setShowPositions] = React.useState(false);
   const [errors, setErrors] = React.useState<FlowError[]>([]);
   const loggedRef = React.useRef<Set<string>>(new Set());
+
+  const lineHops = props.lineHops ?? true;
+  const avoidCollisions = props.avoidCollisions ?? true;
+  const edgeTypes = React.useMemo(() => {
+    return createSmartEdgeTypes(lineHops);
+  }, [lineHops]);
+  const smartEdgeOptions = React.useMemo(
+    () => ({
+      nodePadding: MW_EDGE_NODE_PADDING,
+      gridRatio: MW_EDGE_GRID_RATIO,
+      routeOnlyWhenBlocked: false,
+    }),
+    [],
+  );
 
   const nodeIds = React.useMemo(() => flow.nodes.map((n) => n.id), [flow]);
   const nodeById = React.useMemo(() => {
@@ -252,6 +276,24 @@ function CanvasInner(props: CanvasInnerProps) {
     });
   }, [finalPositions, setRfNodes]);
 
+  const targetSlotIndices = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    const indices = new Map<number, number>();
+
+    validIndices.forEach((i) => {
+      const e = flowEdges[i] as (typeof flowEdges)[number];
+      const sourcePos = finalPositions[e.from];
+      const targetPos = finalPositions[e.to];
+      const resolved = resolveTargetPort(sourcePos, targetPos, e.targetSide);
+      const key = `${e.to}:${resolved.side}`;
+      const count = counts.get(key) ?? 0;
+      indices.set(i, count);
+      counts.set(key, count + 1);
+    });
+
+    return indices;
+  }, [validIndices, flowEdges, finalPositions]);
+
   const edgeRouting = props.edgeRouting;
   React.useEffect(() => {
     const defaultRouting = edgeRouting ?? MW_DEFAULT_EDGE_ROUTING;
@@ -260,22 +302,43 @@ function CanvasInner(props: CanvasInnerProps) {
         const e = flowEdges[i] as (typeof flowEdges)[number];
         const id = mwEdgeId(e.from, e.trigger, e.to, i);
         const routing = e.routing ?? defaultRouting;
-        return createBuiltInEdge(routing, {
+        const sourcePos = finalPositions[e.from];
+        const targetPos = finalPositions[e.to];
+        const slotIndex = targetSlotIndices.get(i) ?? 0;
+        const resolvedPort = resolveTargetPort(
+          sourcePos,
+          targetPos,
+          e.targetSide,
+          slotIndex,
+        );
+        const edgeAvoidCollisions = e.avoidCollisions ?? avoidCollisions;
+
+        return createFlowEdge(routing, {
           id,
           source: e.from,
           sourceHandle: e.trigger === "" ? "__empty" : e.trigger,
           target: e.to,
-          targetHandle: MW_TARGET_HANDLE_ID,
+          targetHandle: resolvedPort.handleId,
           label: e.label,
           labelBgPadding: [8, 4] as [number, number],
           labelBgBorderRadius: 4,
           interactionWidth: MW_EDGE_INTERACTION_WIDTH,
           style: { strokeDasharray: MW_DASH[e.lineStyle ?? "solid"] },
           className: hoveredEdgeIds.has(id) ? "mw-edge-hovered" : undefined,
+          avoidCollisions: edgeAvoidCollisions,
         });
       }),
     );
-  }, [flowEdges, validIndices, hoveredEdgeIds, setRfEdges, edgeRouting]);
+  }, [
+    flowEdges,
+    validIndices,
+    hoveredEdgeIds,
+    setRfEdges,
+    edgeRouting,
+    avoidCollisions,
+    finalPositions,
+    targetSlotIndices,
+  ]);
 
   React.useEffect(() => {
     const phase1 = validateFlowIds(flow);
@@ -627,92 +690,48 @@ function CanvasInner(props: CanvasInnerProps) {
       </div>
       <div className="mw-canvas-row">
         <div className="mw-flow">
-          <ReactFlow<ScreenNodeType, BuiltInEdge>
-            nodes={rfNodes}
-            edges={rfEdges}
-            onNodesChange={handleNodesChange}
-            onEdgesChange={onEdgesChange}
-            nodeTypes={nodeTypes}
-            fitView
-            fitViewOptions={{ padding: MW_FIT_PADDING }}
-            minZoom={0.1}
-            maxZoom={2}
-            nodesDraggable
-            nodesConnectable={false}
-            elementsSelectable
-            elevateEdgesOnSelect
-            onNodeClick={(_, n) => {
-              setSelectedId(n.id);
-              onNodeSelect?.(n.id);
-              setPicker(null);
-            }}
-            onEdgeMouseEnter={(_, e) =>
-              setHover({ kind: "edge", edgeId: e.id })
-            }
-            onEdgeMouseLeave={() => setHover(null)}
-            onPaneClick={() => {
-              setPicker(null);
-              setSearchOpen(false);
-            }}
-            proOptions={{ hideAttribution: false }}
-          >
-            {props.showControls ? <Controls position="top-left" /> : null}
-            {props.showMinimap ? <MiniMap /> : null}
-            <Background
-              variant={BackgroundVariant.Lines}
-              gap={24}
-              size={1}
-              color="#e6ddc9"
-              bgColor="#fbf8f1"
-            />
-          </ReactFlow>
-          <div className="mw-legend" aria-hidden="true">
-            <div className="mw-legend-title">edge key</div>
-            <div className="mw-legend-row">
-              <svg width="34" height="8" aria-hidden="true">
-                <line
-                  x1="1"
-                  y1="4"
-                  x2="33"
-                  y2="4"
-                  stroke="#141414"
-                  strokeWidth="2.25"
-                  strokeLinecap="round"
-                />
-              </svg>
-              plain path
-            </div>
-            <div className="mw-legend-row">
-              <svg width="34" height="8" aria-hidden="true">
-                <line
-                  x1="1"
-                  y1="4"
-                  x2="33"
-                  y2="4"
-                  stroke="#141414"
-                  strokeWidth="2.25"
-                  strokeLinecap="round"
-                  strokeDasharray="6 4"
-                />
-              </svg>
-              if / maybe
-            </div>
-            <div className="mw-legend-row">
-              <svg width="34" height="8" aria-hidden="true">
-                <line
-                  x1="1"
-                  y1="4"
-                  x2="33"
-                  y2="4"
-                  stroke="#141414"
-                  strokeWidth="2.25"
-                  strokeLinecap="round"
-                  strokeDasharray="1 5"
-                />
-              </svg>
-              aside
-            </div>
-          </div>
+          <SmartEdgeProvider nodes={rfNodes} options={smartEdgeOptions}>
+            <ReactFlow<ScreenNodeType, FlowEdgeInstance>
+              nodes={rfNodes}
+              edges={rfEdges}
+              onNodesChange={handleNodesChange}
+              onEdgesChange={onEdgesChange}
+              nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
+              fitView
+              fitViewOptions={{ padding: MW_FIT_PADDING }}
+              minZoom={0.1}
+              maxZoom={2}
+              nodesDraggable
+              nodesConnectable={false}
+              elementsSelectable
+              elevateEdgesOnSelect
+              onNodeClick={(_, n) => {
+                setSelectedId(n.id);
+                onNodeSelect?.(n.id);
+                setPicker(null);
+              }}
+              onEdgeMouseEnter={(_, e) =>
+                setHover({ kind: "edge", edgeId: e.id })
+              }
+              onEdgeMouseLeave={() => setHover(null)}
+              onPaneClick={() => {
+                setPicker(null);
+                setSearchOpen(false);
+              }}
+              proOptions={{ hideAttribution: false }}
+            >
+              {props.showControls ? <Controls position="top-left" /> : null}
+              {props.showMinimap ? <MiniMap /> : null}
+              <Background
+                variant={BackgroundVariant.Lines}
+                gap={24}
+                size={1}
+                color="#e6ddc9"
+                bgColor="#fbf8f1"
+              />
+            </ReactFlow>
+          </SmartEdgeProvider>
         </div>
         <div className="mw-panel">
           {selected ? (
@@ -805,6 +824,8 @@ export function Wireflow(props: WireflowProps) {
           showSearch={props.showSearch ?? true}
           showControls={props.showControls ?? true}
           edgeRouting={props.edgeRouting}
+          avoidCollisions={props.avoidCollisions}
+          lineHops={props.lineHops}
           wrapperRef={wrapperRef}
           onPositionsExport={props.onPositionsExport}
           onNodeSelect={props.onNodeSelect}

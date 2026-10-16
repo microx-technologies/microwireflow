@@ -57,14 +57,6 @@
       "refersTo": "button-chrome"
     },
     {
-      "css": ".ds-legend { background: var(--mw-paper); border: 2px solid var(--mw-ink); border-radius: 15px 6px 12px 5px / 5px 12px 6px 15px; box-shadow: 2px 2px 0 0 var(--mw-ink); padding: 8px 12px 9px; font-family: var(--mw-font); font-size: 14px; transform: rotate(-0.6deg); } .ds-legend-title { font-weight: 700; font-size: 15px; }",
-      "description": "Edge key legend card pinned bottom-left of the board.",
-      "html": "<div class=\"ds-legend\"><div class=\"ds-legend-title\">Edge key</div><div>— flow &nbsp; ⇢ trigger</div></div>",
-      "kind": "custom",
-      "name": "Edge Legend",
-      "refersTo": "button-chrome"
-    },
-    {
       "name": "Demo Default Button",
       "kind": "button",
       "refersTo": "demo-button-default",

@@ -194,6 +194,15 @@
   background: var(--mw-ink);
 }
 
+.mw-target-handle {
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+  border: 0;
+  background: transparent;
+}
+
 .mw-toolbar {
   display: flex;
   align-items: center;

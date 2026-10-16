@@ -17,7 +17,23 @@ export const MW_DASH: Record<LineStyle, string | undefined> = {
   dashed: "6 4",
   dotted: "1 5",
 };
+export const MW_EDGE_NODE_PADDING = 24;
+export const MW_EDGE_GRID_RATIO = 10;
+export const MW_HOP_RADIUS = 7;
+
 export const MW_TARGET_HANDLE_ID = "__target";
+export const MW_TARGET_HANDLE_LEFT_ID = "__target_left";
+export const MW_TARGET_HANDLE_TOP_ID = "__target_top";
+export const MW_TARGET_HANDLE_RIGHT_ID = "__target_right";
+export const MW_TARGET_HANDLE_BOTTOM_ID = "__target_bottom";
+
+export const MW_TARGET_SLOTS = [
+  "center",
+  "offset-prev",
+  "offset-next",
+] as const;
+export type TargetSlot = (typeof MW_TARGET_SLOTS)[number];
+
 export const MW_EMPTY_TRIGGER_HANDLE_ID = "__empty";
 export const MW_FOCUS_DURATION = 400;
 export const MW_FIT_PADDING = 0.2;

@@ -1,7 +1,13 @@
 import type { Node, NodeProps } from "@xyflow/react";
 import { Handle, Position } from "@xyflow/react";
 import * as React from "react";
-import { MW_TARGET_HANDLE_ID } from "@/constants.ts";
+import {
+  MW_TARGET_HANDLE_BOTTOM_ID,
+  MW_TARGET_HANDLE_ID,
+  MW_TARGET_HANDLE_LEFT_ID,
+  MW_TARGET_HANDLE_RIGHT_ID,
+  MW_TARGET_HANDLE_TOP_ID,
+} from "@/constants.ts";
 import {
   ScreenNodeCallbacksContext,
   TriggerRegistryContext,
@@ -73,9 +79,110 @@ export function ScreenNode(props: NodeProps<ScreenNodeType>) {
     >
       <Handle
         type="target"
+        position={Position.Left}
+        id={MW_TARGET_HANDLE_LEFT_ID}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ top: "50%" }}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id={`${MW_TARGET_HANDLE_LEFT_ID}_prev`}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ top: "35%" }}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id={`${MW_TARGET_HANDLE_LEFT_ID}_next`}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ top: "65%" }}
+      />
+
+      <Handle
+        type="target"
+        position={Position.Top}
+        id={MW_TARGET_HANDLE_TOP_ID}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ left: "50%" }}
+      />
+      <Handle
+        type="target"
         position={Position.Top}
         id={MW_TARGET_HANDLE_ID}
         isConnectable={false}
+        className="mw-target-handle"
+        style={{ left: "50%" }}
+      />
+      <Handle
+        type="target"
+        position={Position.Top}
+        id={`${MW_TARGET_HANDLE_TOP_ID}_prev`}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ left: "35%" }}
+      />
+      <Handle
+        type="target"
+        position={Position.Top}
+        id={`${MW_TARGET_HANDLE_TOP_ID}_next`}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ left: "65%" }}
+      />
+
+      <Handle
+        type="target"
+        position={Position.Right}
+        id={MW_TARGET_HANDLE_RIGHT_ID}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ top: "50%" }}
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id={`${MW_TARGET_HANDLE_RIGHT_ID}_prev`}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ top: "35%" }}
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id={`${MW_TARGET_HANDLE_RIGHT_ID}_next`}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ top: "65%" }}
+      />
+
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id={MW_TARGET_HANDLE_BOTTOM_ID}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ left: "50%" }}
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id={`${MW_TARGET_HANDLE_BOTTOM_ID}_prev`}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ left: "35%" }}
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id={`${MW_TARGET_HANDLE_BOTTOM_ID}_next`}
+        isConnectable={false}
+        className="mw-target-handle"
+        style={{ left: "65%" }}
       />
       <div className="mw-node-header">
         <span className="mw-node-title">{flowNode.title}</span>

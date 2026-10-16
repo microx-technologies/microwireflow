@@ -6,7 +6,11 @@ import {
   MW_EDGE_OFFSET,
   mwEdgeId,
 } from "@/constants.ts";
-import { createBuiltInEdge } from "@/edges.ts";
+import {
+  createBuiltInEdge,
+  createFlowEdge,
+  resolveTargetPort,
+} from "@/edges.ts";
 import { currentPositionsFromNodes, serializePositions } from "@/positions.ts";
 
 describe("positions", () => {
@@ -109,5 +113,96 @@ describe("edges", () => {
       style: {},
     });
     expect(straight.type).toBe("straight");
+  });
+
+  test("resolveTargetPort resolves left for rightward flow", () => {
+    const res = resolveTargetPort({ x: 0, y: 100 }, { x: 500, y: 100 });
+    expect(res.side).toBe("left");
+    expect(res.handleId).toBe("__target_left");
+  });
+
+  test("resolveTargetPort resolves right for reverse horizontal flow", () => {
+    const res = resolveTargetPort({ x: 500, y: 100 }, { x: 0, y: 100 });
+    expect(res.side).toBe("right");
+    expect(res.handleId).toBe("__target_right");
+  });
+
+  test("resolveTargetPort resolves top when source is above", () => {
+    const res = resolveTargetPort({ x: 100, y: 0 }, { x: 100, y: 350 });
+    expect(res.side).toBe("top");
+    expect(res.handleId).toBe("__target_top");
+  });
+
+  test("resolveTargetPort resolves bottom when source is below", () => {
+    const res = resolveTargetPort({ x: 100, y: 350 }, { x: 100, y: 0 });
+    expect(res.side).toBe("bottom");
+    expect(res.handleId).toBe("__target_bottom");
+  });
+
+  test("resolveTargetPort respects explicit targetSide", () => {
+    const res = resolveTargetPort(
+      { x: 0, y: 100 },
+      { x: 500, y: 100 },
+      "bottom",
+    );
+    expect(res.side).toBe("bottom");
+    expect(res.handleId).toBe("__target_bottom");
+  });
+
+  test("resolveTargetPort distributes slots across multiple incoming edges", () => {
+    const port0 = resolveTargetPort(
+      { x: 0, y: 100 },
+      { x: 500, y: 100 },
+      "left",
+      0,
+    );
+    const port1 = resolveTargetPort(
+      { x: 0, y: 100 },
+      { x: 500, y: 100 },
+      "left",
+      1,
+    );
+    const port2 = resolveTargetPort(
+      { x: 0, y: 100 },
+      { x: 500, y: 100 },
+      "left",
+      2,
+    );
+
+    expect(port0.handleId).toBe("__target_left");
+    expect(port1.handleId).toBe("__target_left_prev");
+    expect(port2.handleId).toBe("__target_left_next");
+  });
+
+  test("createFlowEdge configures smart types when avoidCollisions is true", () => {
+    const edge = createFlowEdge("smoothstep", {
+      id: "e-smart",
+      source: "login",
+      sourceHandle: "submit",
+      target: "home",
+      targetHandle: "__target_left",
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      interactionWidth: 8,
+      style: {},
+      avoidCollisions: true,
+    });
+    expect(edge.type).toBe("smart_smoothstep");
+  });
+
+  test("createFlowEdge falls back to built-in when avoidCollisions is false", () => {
+    const edge = createFlowEdge("smoothstep", {
+      id: "e-builtin",
+      source: "login",
+      sourceHandle: "submit",
+      target: "home",
+      targetHandle: "__target_left",
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      interactionWidth: 8,
+      style: {},
+      avoidCollisions: false,
+    });
+    expect(edge.type).toBe("smoothstep");
   });
 });

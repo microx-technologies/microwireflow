@@ -22,6 +22,7 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
+    "@tisoap/react-flow-smart-edge": "^5.0.0",
     "elkjs": "^0.11.0",
     "html-to-image": "^1.11.13"
   },

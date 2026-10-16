@@ -7,6 +7,7 @@ export type {
   FlowNode,
   FlowPositions,
   LineStyle,
+  TargetSide,
   TriggerProps,
   WireflowProps,
 } from "@/types.ts";
