@@ -15,6 +15,7 @@
   --mw-r-node: 15px 6px 12px 5px / 5px 12px 6px 15px;
   --mw-r-card: 255px 25px 225px 25px / 25px 225px 25px 255px;
   --mw-r-pill: 7rem 8rem 8rem 8rem / 4rem 5rem 6rem 6rem;
+  --mw-node-width: 520px;
 
   position: relative;
   display: flex;
@@ -73,7 +74,7 @@
 }
 
 .mw-node {
-  width: 360px;
+  width: var(--mw-node-width, 520px);
   background: var(--mw-paper);
   border: 2px solid var(--mw-ink);
   border-radius: var(--mw-r-node);

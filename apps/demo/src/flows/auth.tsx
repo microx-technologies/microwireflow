@@ -1,4 +1,4 @@
-import { defineFlow } from "microwireflow";
+import { defineFlow } from "microwireflow/flow";
 import { Home } from "@/screens/Home.tsx";
 import { Login } from "@/screens/Login.tsx";
 import { LogoutConfirm } from "@/screens/LogoutConfirm.tsx";

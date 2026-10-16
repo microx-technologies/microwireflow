@@ -48,7 +48,7 @@ export function Login({ error }: { error?: string }) {
 
 ```tsx
 // flows/auth.tsx — the only place wiring lives
-import { defineFlow } from "microwireflow";
+import { defineFlow } from "microwireflow/flow";
 import { Login } from "../screens/Login";
 import { Home } from "../screens/Home";
 

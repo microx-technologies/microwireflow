@@ -47,7 +47,7 @@ Use `defineFlow` to declare screens (`nodes`) and transitions (`edges`):
 
 ```tsx
 // flows/authFlow.tsx
-import { defineFlow } from "microwireflow";
+import { defineFlow } from "microwireflow/flow";
 import { Login } from "../screens/Login";
 import { Home } from "../screens/Home";
 import { ResetPassword } from "../screens/ResetPassword";
@@ -163,6 +163,8 @@ The main diagram component. Must be placed inside a container with explicit dime
 | `edgeRouting` | `EdgeRouting` | `"smoothstep"` | Default routing for all edges. |
 | `avoidCollisions` | `boolean` | `false` | Enable obstacle-avoidance routing globally. |
 | `lineHops` | `boolean` | `true` | Render jump arches when edges intersect. |
+| `nodeWidth` | `number` | `520` | Default width (in px) for screen cards. |
+| `maxFitZoom` | `number` | `0.75` | Maximum zoom level when auto-fitting the view. |
 | `onPositionsExport` | `(positions, snippet) => void` | `undefined` | Callback invoked when positions are copied. |
 | `onNodeSelect` | `(nodeId: string \| null) => void` | `undefined` | Callback invoked when screen selection changes. |
 

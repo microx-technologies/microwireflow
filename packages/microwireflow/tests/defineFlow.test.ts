@@ -59,3 +59,13 @@ describe("defineFlow", () => {
     expect(defineFlow(valid)).toBe(valid);
   });
 });
+
+describe("constants", () => {
+  test("screen dimensions and fit zoom defaults are configured", async () => {
+    const { MW_DEFAULT_MAX_FIT_ZOOM, MW_NODE_WIDTH } = await import(
+      "@/constants.ts"
+    );
+    expect(MW_NODE_WIDTH).toBe(520);
+    expect(MW_DEFAULT_MAX_FIT_ZOOM).toBe(0.75);
+  });
+});

@@ -1,6 +1,6 @@
 {
   "name": "@microx-technologies/microwireflow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Code-first wireflow docs library: plain TSX screens, declarative flow wiring, live React Flow canvas.",
   "type": "module",
   "main": "dist/index.cjs",
@@ -49,6 +49,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./flow": {
+      "types": "./dist/flow.d.ts",
+      "import": "./dist/flow.js",
+      "require": "./dist/flow.cjs"
     },
     "./styles.css": "./dist/styles.css"
   },

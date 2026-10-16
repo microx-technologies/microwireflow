@@ -55,6 +55,8 @@ export type WireflowProps = {
   edgeRouting?: EdgeRouting;
   avoidCollisions?: boolean;
   lineHops?: boolean;
+  nodeWidth?: number;
+  maxFitZoom?: number;
   onPositionsExport?: (positions: FlowPositions, snippet: string) => void;
   onNodeSelect?: (nodeId: string | null) => void;
 };

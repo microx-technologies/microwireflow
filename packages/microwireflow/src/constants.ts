@@ -1,7 +1,7 @@
 import type { EdgeRouting, LineStyle } from "@/types.ts";
 
-export const MW_NODE_WIDTH = 360;
-export const MW_ELK_HEIGHT_EST = 320;
+export const MW_NODE_WIDTH = 520;
+export const MW_ELK_HEIGHT_EST = 360;
 export const MW_DEFAULT_EDGE_ROUTING: EdgeRouting = "smoothstep";
 export const MW_EDGE_BORDER_RADIUS = 8;
 export const MW_EDGE_OFFSET = 20;
@@ -39,11 +39,12 @@ export const MW_SOURCE_HANDLE_LEFT_SUFFIX = "__left";
 export const MW_SOURCE_HANDLE_RIGHT_SUFFIX = "__right";
 export const MW_FOCUS_DURATION = 400;
 export const MW_FIT_PADDING = 0.2;
+export const MW_DEFAULT_MAX_FIT_ZOOM = 0.75;
 export const MW_EXPORT_PIXEL_RATIO = 2;
 export const MW_EXPORT_PADDING = 40;
 export const MW_GRID_FALLBACK_COLS = 4;
-export const MW_GRID_FALLBACK_DX = 420;
-export const MW_GRID_FALLBACK_DY = 380;
+export const MW_GRID_FALLBACK_DX = 600;
+export const MW_GRID_FALLBACK_DY = 420;
 export const MW_EDGE_INTERACTION_WIDTH = 8;
 
 export function mwEdgeId(

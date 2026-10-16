@@ -153,7 +153,7 @@ Warm paper over a darker desk board, inked in near-black; red appears only where
 
 ## Layout
 
-The renderer is fullscreen: `AuthDocs` returns a bare `<Wireflow>` with no header, footer, or page wrapper, and the library `.mw` frame fills the viewport (`height: 100dvh`) with no page surround. Inside, a single framed column: marker-tray toolbar across the top, flow canvas in the middle, annotation slip docked to the right, legend card pinned bottom-left, validation overlay centered on top. Node scraps are fixed 360px paper cards. Rhythm is 8px gaps in toolbars and headers, 10–14px card padding, 12–16px panel padding. At 390px the frame keeps its height and scrolls/zooms internally — chrome wraps (toolbar) rather than overflowing.
+The renderer is fullscreen: `AuthDocs` returns a bare `<Wireflow>` with no header, footer, or page wrapper, and the library `.mw` frame fills the viewport (`height: 100dvh`) with no page surround. Inside, a single framed column: marker-tray toolbar across the top, flow canvas in the middle, annotation slip docked to the right, legend card pinned bottom-left, validation overlay centered on top. Node scraps are 520px paper cards (customizable via `--mw-node-width` or the `nodeWidth` prop). Rhythm is 8px gaps in toolbars and headers, 10–14px card padding, 12–16px panel padding. At 390px the frame keeps its height and scrolls/zooms internally — chrome wraps (toolbar) rather than overflowing.
 
 ## Elevation & Depth
 
@@ -187,7 +187,7 @@ Toolbar buttons are white paper chips with 2px ink borders in the sketch-ellipse
 - **State:** Modal kind doubles the border (4px double rule); popup kind dashes it; error kind re-inks pill and title underline in red
 
 ### Cards / Containers
-Node scraps are 360px paper cards with 2px ink borders, node-wobble radius, and card-lift shadow. Headers carry a 2px ink rule with two masking-tape strips pinned at −6deg/+5deg. Selected adds a solid 2px outline at 3px offset with selected lift; hover-highlight swaps the outline to dashed.
+Node scraps are 520px paper cards with 2px ink borders, node-wobble radius, and card-lift shadow. Headers carry a 2px ink rule with two masking-tape strips pinned at −6deg/+5deg. Selected adds a solid 2px outline at 3px offset with selected lift; hover-highlight swaps the outline to dashed.
 - **Corner Style:** Node wobble (15px 6px 12px 5px / 5px 12px 6px 15px)
 - **Background:** Scrap paper (#fffdf5)
 - **Shadow Strategy:** Card lift at rest; selected lift with outline offset

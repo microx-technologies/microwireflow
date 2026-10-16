@@ -117,13 +117,13 @@ describe("edges", () => {
   });
 
   test("resolveTargetPort resolves left for rightward flow", () => {
-    const res = resolveTargetPort({ x: 0, y: 100 }, { x: 500, y: 100 });
+    const res = resolveTargetPort({ x: 0, y: 100 }, { x: 700, y: 100 });
     expect(res.side).toBe("left");
     expect(res.handleId).toBe("__target_left");
   });
 
   test("resolveTargetPort resolves right for reverse horizontal flow", () => {
-    const res = resolveTargetPort({ x: 500, y: 100 }, { x: 0, y: 100 });
+    const res = resolveTargetPort({ x: 700, y: 100 }, { x: 0, y: 100 });
     expect(res.side).toBe("right");
     expect(res.handleId).toBe("__target_right");
   });
@@ -143,7 +143,7 @@ describe("edges", () => {
   test("resolveTargetPort respects explicit targetSide", () => {
     const res = resolveTargetPort(
       { x: 0, y: 100 },
-      { x: 500, y: 100 },
+      { x: 700, y: 100 },
       "bottom",
     );
     expect(res.side).toBe("bottom");
@@ -153,19 +153,19 @@ describe("edges", () => {
   test("resolveTargetPort distributes slots across multiple incoming edges", () => {
     const port0 = resolveTargetPort(
       { x: 0, y: 100 },
-      { x: 500, y: 100 },
+      { x: 700, y: 100 },
       "left",
       0,
     );
     const port1 = resolveTargetPort(
       { x: 0, y: 100 },
-      { x: 500, y: 100 },
+      { x: 700, y: 100 },
       "left",
       1,
     );
     const port2 = resolveTargetPort(
       { x: 0, y: 100 },
-      { x: 500, y: 100 },
+      { x: 700, y: 100 },
       "left",
       2,
     );
@@ -179,7 +179,7 @@ describe("edges", () => {
     const res = resolveSourcePort(
       "submit",
       { x: 0, y: 100 },
-      { x: 500, y: 100 },
+      { x: 700, y: 100 },
     );
     expect(res.side).toBe("right");
     expect(res.handleId).toBe("submit__right");
@@ -188,7 +188,7 @@ describe("edges", () => {
   test("resolveSourcePort resolves left for leftward flow", () => {
     const res = resolveSourcePort(
       "logout",
-      { x: 500, y: 100 },
+      { x: 700, y: 100 },
       { x: 0, y: 100 },
     );
     expect(res.side).toBe("left");
@@ -218,7 +218,7 @@ describe("edges", () => {
   test("resolveSourcePort respects explicit sourceSide", () => {
     const res = resolveSourcePort(
       "action",
-      { x: 500, y: 100 },
+      { x: 700, y: 100 },
       { x: 0, y: 100 },
       "right",
     );

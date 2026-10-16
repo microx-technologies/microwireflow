@@ -15,6 +15,7 @@ import * as React from "react";
 import {
   MW_DASH,
   MW_DEFAULT_EDGE_ROUTING,
+  MW_DEFAULT_MAX_FIT_ZOOM,
   MW_EDGE_BORDER_RADIUS,
   MW_EDGE_GRID_RATIO,
   MW_EDGE_INTERACTION_WIDTH,
@@ -81,6 +82,8 @@ type CanvasInnerProps = {
   edgeRouting?: EdgeRouting;
   avoidCollisions?: boolean;
   lineHops?: boolean;
+  nodeWidth: number;
+  maxFitZoom: number;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
   onPositionsExport?: (positions: FlowPositions, snippet: string) => void;
   onNodeSelect?: (nodeId: string | null) => void;
@@ -109,7 +112,7 @@ function validEdgeIndices(
 }
 
 function CanvasInner(props: CanvasInnerProps) {
-  const { flow } = props;
+  const { flow, nodeWidth, maxFitZoom } = props;
   const {
     getNode,
     getInternalNode,
@@ -218,7 +221,10 @@ function CanvasInner(props: CanvasInnerProps) {
       };
     }
     const edgeInputs = flowEdges.map((e) => ({ from: e.from, to: e.to }));
-    layoutWithElk(missing, edgeInputs)
+    layoutWithElk(missing, edgeInputs, {
+      width: nodeWidth,
+      height: MW_ELK_HEIGHT_EST,
+    })
       .then((pos) => {
         if (live) {
           setComputed(pos);
@@ -236,7 +242,7 @@ function CanvasInner(props: CanvasInnerProps) {
     return () => {
       live = false;
     };
-  }, [nodeIds, flowPositions, flowEdges]);
+  }, [nodeIds, flowPositions, flowEdges, nodeWidth]);
 
   const finalPositionsRef = React.useRef(finalPositions);
   finalPositionsRef.current = finalPositions;
@@ -454,7 +460,7 @@ function CanvasInner(props: CanvasInnerProps) {
       if (!internal) {
         return;
       }
-      const w = getInternalNode(id)?.measured?.width ?? MW_NODE_WIDTH;
+      const w = getInternalNode(id)?.measured?.width ?? nodeWidth;
       const h = getInternalNode(id)?.measured?.height ?? MW_ELK_HEIGHT_EST;
       const pos = internal.position;
       void setCenter(pos.x + w / 2, pos.y + h / 2, {
@@ -470,7 +476,15 @@ function CanvasInner(props: CanvasInnerProps) {
       onNodeSelect?.(id);
       setPicker(null);
     },
-    [getInternalNode, getNode, getZoom, setCenter, onNodeSelect, setRfNodes],
+    [
+      getInternalNode,
+      getNode,
+      getZoom,
+      setCenter,
+      onNodeSelect,
+      setRfNodes,
+      nodeWidth,
+    ],
   );
 
   const onRegistryChange = React.useCallback(
@@ -730,7 +744,11 @@ function CanvasInner(props: CanvasInnerProps) {
           type="button"
           className="mw-btn"
           onClick={() =>
-            void fitView({ padding: MW_FIT_PADDING, duration: 200 })
+            void fitView({
+              padding: MW_FIT_PADDING,
+              maxZoom: maxFitZoom,
+              duration: 200,
+            })
           }
         >
           Fit view
@@ -743,6 +761,7 @@ function CanvasInner(props: CanvasInnerProps) {
             layoutWithElk(
               nodeIds,
               flowEdges.map((e) => ({ from: e.from, to: e.to })),
+              { width: nodeWidth, height: MW_ELK_HEIGHT_EST },
             )
               .then((pos) => setComputed(pos))
               .catch((err: unknown) => {
@@ -789,7 +808,10 @@ function CanvasInner(props: CanvasInnerProps) {
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
               fitView
-              fitViewOptions={{ padding: MW_FIT_PADDING }}
+              fitViewOptions={{
+                padding: MW_FIT_PADDING,
+                maxZoom: maxFitZoom,
+              }}
               minZoom={0.1}
               maxZoom={2}
               nodesDraggable
@@ -811,7 +833,15 @@ function CanvasInner(props: CanvasInnerProps) {
               }}
               proOptions={{ hideAttribution: false }}
             >
-              {props.showControls ? <Controls position="top-left" /> : null}
+              {props.showControls ? (
+                <Controls
+                  position="top-left"
+                  fitViewOptions={{
+                    padding: MW_FIT_PADDING,
+                    maxZoom: maxFitZoom,
+                  }}
+                />
+              ) : null}
               {props.showMinimap ? <MiniMap /> : null}
               <Background
                 variant={BackgroundVariant.Lines}
@@ -901,11 +931,21 @@ function CanvasInner(props: CanvasInnerProps) {
 
 export function Wireflow(props: WireflowProps) {
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+  const nodeWidth = props.nodeWidth ?? MW_NODE_WIDTH;
+  const maxFitZoom = props.maxFitZoom ?? MW_DEFAULT_MAX_FIT_ZOOM;
+
+  const styleWithVars = React.useMemo(() => {
+    return {
+      "--mw-node-width": `${nodeWidth}px`,
+      ...props.style,
+    } as React.CSSProperties;
+  }, [nodeWidth, props.style]);
+
   return (
     <div
       ref={wrapperRef}
       className={`mw ${props.className ?? ""}`}
-      style={props.style}
+      style={styleWithVars}
     >
       <ReactFlowProvider>
         <CanvasInner
@@ -916,6 +956,8 @@ export function Wireflow(props: WireflowProps) {
           edgeRouting={props.edgeRouting}
           avoidCollisions={props.avoidCollisions}
           lineHops={props.lineHops}
+          nodeWidth={nodeWidth}
+          maxFitZoom={maxFitZoom}
           wrapperRef={wrapperRef}
           onPositionsExport={props.onPositionsExport}
           onNodeSelect={props.onNodeSelect}
