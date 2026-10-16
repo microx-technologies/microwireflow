@@ -35,6 +35,8 @@ export const MW_TARGET_SLOTS = [
 export type TargetSlot = (typeof MW_TARGET_SLOTS)[number];
 
 export const MW_EMPTY_TRIGGER_HANDLE_ID = "__empty";
+export const MW_SOURCE_HANDLE_LEFT_SUFFIX = "__left";
+export const MW_SOURCE_HANDLE_RIGHT_SUFFIX = "__right";
 export const MW_FOCUS_DURATION = 400;
 export const MW_FIT_PADDING = 0.2;
 export const MW_EXPORT_PIXEL_RATIO = 2;

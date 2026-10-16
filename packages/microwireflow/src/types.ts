@@ -6,6 +6,8 @@ export type EdgeRouting = "smoothstep" | "step" | "bezier" | "straight";
 
 export type TargetSide = "left" | "top" | "right" | "bottom";
 
+export type SourceSide = "left" | "right";
+
 export type TriggerProps = {
   id: string;
   children: React.ReactNode;
@@ -32,6 +34,7 @@ export type FlowEdge = {
   avoidCollisions?: boolean;
   lineHops?: boolean;
   targetSide?: TargetSide;
+  sourceSide?: SourceSide;
 };
 
 export type FlowPositions = Record<string, { x: number; y: number }>;

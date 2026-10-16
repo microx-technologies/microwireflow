@@ -5,16 +5,62 @@ import {
   MW_EDGE_GRID_RATIO,
   MW_EDGE_NODE_PADDING,
   MW_EDGE_OFFSET,
+  MW_EMPTY_TRIGGER_HANDLE_ID,
   MW_HOP_RADIUS,
   MW_NODE_WIDTH,
+  MW_SOURCE_HANDLE_LEFT_SUFFIX,
+  MW_SOURCE_HANDLE_RIGHT_SUFFIX,
   MW_TARGET_HANDLE_BOTTOM_ID,
   MW_TARGET_HANDLE_LEFT_ID,
   MW_TARGET_HANDLE_RIGHT_ID,
   MW_TARGET_HANDLE_TOP_ID,
 } from "@/constants.ts";
-import type { EdgeRouting, TargetSide } from "@/types.ts";
+import type { EdgeRouting, SourceSide, TargetSide } from "@/types.ts";
 
 export const SMART_EDGE_TYPE_PREFIX = "smart_";
+
+export type SourcePortResolution = {
+  handleId: string;
+  side: SourceSide;
+};
+
+export function resolveSourcePort(
+  baseTriggerId: string,
+  sourcePos: { x: number; y: number } | undefined,
+  targetPos: { x: number; y: number } | undefined,
+  explicitSide?: SourceSide,
+): SourcePortResolution {
+  const trigger =
+    baseTriggerId === "" ? MW_EMPTY_TRIGGER_HANDLE_ID : baseTriggerId;
+
+  let side: SourceSide;
+  if (explicitSide !== undefined) {
+    side = explicitSide;
+  } else if (sourcePos === undefined || targetPos === undefined) {
+    side = "right";
+  } else if (targetPos.x + MW_NODE_WIDTH <= sourcePos.x) {
+    side = "left";
+  } else if (sourcePos.x + MW_NODE_WIDTH <= targetPos.x) {
+    side = "right";
+  } else if (targetPos.x < sourcePos.x) {
+    side = "left";
+  } else {
+    side = "right";
+  }
+
+  switch (side) {
+    case "left":
+      return {
+        handleId: `${trigger}${MW_SOURCE_HANDLE_LEFT_SUFFIX}`,
+        side: "left",
+      };
+    case "right":
+      return {
+        handleId: `${trigger}${MW_SOURCE_HANDLE_RIGHT_SUFFIX}`,
+        side: "right",
+      };
+  }
+}
 
 export type CreateBuiltInEdgeOptions = {
   id: string;
@@ -28,6 +74,11 @@ export type CreateBuiltInEdgeOptions = {
   interactionWidth: number;
   style: React.CSSProperties;
   className?: string;
+  pathOptions?: {
+    borderRadius?: number;
+    offset?: number;
+    stepPosition?: number;
+  };
 };
 
 export type TargetPortResolution = {
@@ -107,8 +158,9 @@ export function createBuiltInEdge(
         ...base,
         type: "smoothstep",
         pathOptions: {
-          borderRadius: MW_EDGE_BORDER_RADIUS,
-          offset: MW_EDGE_OFFSET,
+          borderRadius: base.pathOptions?.borderRadius ?? MW_EDGE_BORDER_RADIUS,
+          offset: base.pathOptions?.offset ?? MW_EDGE_OFFSET,
+          stepPosition: base.pathOptions?.stepPosition,
         },
       };
     case "step":
@@ -116,19 +168,23 @@ export function createBuiltInEdge(
         ...base,
         type: "step",
         pathOptions: {
-          offset: MW_EDGE_OFFSET,
+          offset: base.pathOptions?.offset ?? MW_EDGE_OFFSET,
         },
       };
-    case "bezier":
+    case "bezier": {
+      const { pathOptions: _, ...rest } = base;
       return {
-        ...base,
+        ...rest,
         type: "default",
       };
-    case "straight":
+    }
+    case "straight": {
+      const { pathOptions: _, ...rest } = base;
       return {
-        ...base,
+        ...rest,
         type: "straight",
       };
+    }
   }
 }
 
@@ -142,6 +198,7 @@ export type FlowEdgeInstance =
       pathOptions?: {
         borderRadius?: number;
         offset?: number;
+        stepPosition?: number;
       };
     });
 
@@ -160,8 +217,10 @@ export function createFlowEdge(
         ...options,
         type,
         pathOptions: {
-          borderRadius: MW_EDGE_BORDER_RADIUS,
-          offset: MW_EDGE_OFFSET,
+          borderRadius:
+            options.pathOptions?.borderRadius ?? MW_EDGE_BORDER_RADIUS,
+          offset: options.pathOptions?.offset ?? MW_EDGE_OFFSET,
+          stepPosition: options.pathOptions?.stepPosition,
         },
       };
     case "step":
@@ -169,7 +228,7 @@ export function createFlowEdge(
         ...options,
         type,
         pathOptions: {
-          offset: MW_EDGE_OFFSET,
+          offset: options.pathOptions?.offset ?? MW_EDGE_OFFSET,
         },
       };
     case "bezier":

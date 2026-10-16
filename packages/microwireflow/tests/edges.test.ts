@@ -9,6 +9,7 @@ import {
 import {
   createBuiltInEdge,
   createFlowEdge,
+  resolveSourcePort,
   resolveTargetPort,
 } from "@/edges.ts";
 import { currentPositionsFromNodes, serializePositions } from "@/positions.ts";
@@ -172,6 +173,63 @@ describe("edges", () => {
     expect(port0.handleId).toBe("__target_left");
     expect(port1.handleId).toBe("__target_left_prev");
     expect(port2.handleId).toBe("__target_left_next");
+  });
+
+  test("resolveSourcePort resolves right for rightward flow", () => {
+    const res = resolveSourcePort(
+      "submit",
+      { x: 0, y: 100 },
+      { x: 500, y: 100 },
+    );
+    expect(res.side).toBe("right");
+    expect(res.handleId).toBe("submit__right");
+  });
+
+  test("resolveSourcePort resolves left for leftward flow", () => {
+    const res = resolveSourcePort(
+      "logout",
+      { x: 500, y: 100 },
+      { x: 0, y: 100 },
+    );
+    expect(res.side).toBe("left");
+    expect(res.handleId).toBe("logout__left");
+  });
+
+  test("resolveSourcePort resolves left when target is to the left in partially overlapping horizontal range", () => {
+    const res = resolveSourcePort(
+      "action",
+      { x: 200, y: 100 },
+      { x: 100, y: 400 },
+    );
+    expect(res.side).toBe("left");
+    expect(res.handleId).toBe("action__left");
+  });
+
+  test("resolveSourcePort resolves right when target is to the right in partially overlapping horizontal range", () => {
+    const res = resolveSourcePort(
+      "action",
+      { x: 100, y: 100 },
+      { x: 200, y: 400 },
+    );
+    expect(res.side).toBe("right");
+    expect(res.handleId).toBe("action__right");
+  });
+
+  test("resolveSourcePort respects explicit sourceSide", () => {
+    const res = resolveSourcePort(
+      "action",
+      { x: 500, y: 100 },
+      { x: 0, y: 100 },
+      "right",
+    );
+    expect(res.side).toBe("right");
+    expect(res.handleId).toBe("action__right");
+  });
+
+  test("resolveSourcePort handles empty trigger id with default fallback", () => {
+    const res = resolveSourcePort("", undefined, undefined);
+    expect(res.side).toBe("right");
+    expect(res.handleId).toBe("__empty__right");
   });
 
   test("createFlowEdge configures smart types when avoidCollisions is true", () => {

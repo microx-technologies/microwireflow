@@ -7,6 +7,7 @@ export type {
   FlowNode,
   FlowPositions,
   LineStyle,
+  SourceSide,
   TargetSide,
   TriggerProps,
   WireflowProps,

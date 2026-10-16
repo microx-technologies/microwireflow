@@ -178,19 +178,34 @@
 
 .mw-trigger-handle {
   position: absolute;
-  right: -7px;
   top: 50%;
   transform: translateY(-50%);
   width: 13px;
   height: 13px;
   padding: 0;
+  border-radius: 50% 45% 52% 48% / 48% 52% 45% 52%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mw-trigger-handle-left {
+  left: -7px;
+  right: auto;
+}
+
+.mw-trigger-handle-right {
+  right: -7px;
+  left: auto;
+}
+
+.mw-trigger-handle-visible {
+  opacity: 1;
   background: var(--mw-paper);
   border: 2px solid var(--mw-ink);
-  border-radius: 50% 45% 52% 48% / 48% 52% 45% 52%;
   box-shadow: 1px 1px 0 0 var(--mw-ink);
 }
 
-.mw-trigger:hover .mw-trigger-handle {
+.mw-trigger:hover .mw-trigger-handle-visible {
   background: var(--mw-ink);
 }
 

@@ -4,6 +4,7 @@
     "target": "ESNext",
     "module": "esnext",
     "moduleDetection": "force",
+    "noEmit": true,
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

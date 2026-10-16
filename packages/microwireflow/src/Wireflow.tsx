@@ -15,9 +15,11 @@ import * as React from "react";
 import {
   MW_DASH,
   MW_DEFAULT_EDGE_ROUTING,
+  MW_EDGE_BORDER_RADIUS,
   MW_EDGE_GRID_RATIO,
   MW_EDGE_INTERACTION_WIDTH,
   MW_EDGE_NODE_PADDING,
+  MW_EDGE_OFFSET,
   MW_ELK_HEIGHT_EST,
   MW_FIT_PADDING,
   MW_FOCUS_DURATION,
@@ -28,6 +30,7 @@ import {
   createFlowEdge,
   createSmartEdgeTypes,
   type FlowEdgeInstance,
+  resolveSourcePort,
   resolveTargetPort,
 } from "@/edges.ts";
 import { exportImage } from "@/exportImage.ts";
@@ -135,7 +138,7 @@ function CanvasInner(props: CanvasInnerProps) {
   const loggedRef = React.useRef<Set<string>>(new Set());
 
   const lineHops = props.lineHops ?? true;
-  const avoidCollisions = props.avoidCollisions ?? true;
+  const avoidCollisions = props.avoidCollisions ?? false;
   const edgeTypes = React.useMemo(() => {
     return createSmartEdgeTypes(lineHops);
   }, [lineHops]);
@@ -143,7 +146,7 @@ function CanvasInner(props: CanvasInnerProps) {
     () => ({
       nodePadding: MW_EDGE_NODE_PADDING,
       gridRatio: MW_EDGE_GRID_RATIO,
-      routeOnlyWhenBlocked: false,
+      routeOnlyWhenBlocked: true,
     }),
     [],
   );
@@ -276,14 +279,22 @@ function CanvasInner(props: CanvasInnerProps) {
     });
   }, [finalPositions, setRfNodes]);
 
+  const nodePositions = React.useMemo(() => {
+    const map: FlowPositions = { ...finalPositions };
+    for (const n of rfNodes) {
+      map[n.id] = { x: n.position.x, y: n.position.y };
+    }
+    return map;
+  }, [finalPositions, rfNodes]);
+
   const targetSlotIndices = React.useMemo(() => {
     const counts = new Map<string, number>();
     const indices = new Map<number, number>();
 
     validIndices.forEach((i) => {
       const e = flowEdges[i] as (typeof flowEdges)[number];
-      const sourcePos = finalPositions[e.from];
-      const targetPos = finalPositions[e.to];
+      const sourcePos = nodePositions[e.from];
+      const targetPos = nodePositions[e.to];
       const resolved = resolveTargetPort(sourcePos, targetPos, e.targetSide);
       const key = `${e.to}:${resolved.side}`;
       const count = counts.get(key) ?? 0;
@@ -292,7 +303,56 @@ function CanvasInner(props: CanvasInnerProps) {
     });
 
     return indices;
-  }, [validIndices, flowEdges, finalPositions]);
+  }, [validIndices, flowEdges, nodePositions]);
+
+  const sourceSlotIndices = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    const indices = new Map<number, number>();
+
+    validIndices.forEach((i) => {
+      const e = flowEdges[i] as (typeof flowEdges)[number];
+      const sourcePos = nodePositions[e.from];
+      const targetPos = nodePositions[e.to];
+      const resolvedSource = resolveSourcePort(
+        e.trigger,
+        sourcePos,
+        targetPos,
+        e.sourceSide,
+      );
+      const key = `${e.from}:${e.trigger}:${resolvedSource.side}`;
+      const count = counts.get(key) ?? 0;
+      indices.set(i, count);
+      counts.set(key, count + 1);
+    });
+
+    return { indices, counts };
+  }, [validIndices, flowEdges, nodePositions]);
+
+  const activeSourceSides = React.useMemo(() => {
+    const map = new Map<string, { left: boolean; right: boolean }>();
+
+    validIndices.forEach((i) => {
+      const e = flowEdges[i] as (typeof flowEdges)[number];
+      const sourcePos = nodePositions[e.from];
+      const targetPos = nodePositions[e.to];
+      const resolvedSource = resolveSourcePort(
+        e.trigger,
+        sourcePos,
+        targetPos,
+        e.sourceSide,
+      );
+      const key = `${e.from}:${e.trigger}`;
+      const entry = map.get(key) ?? { left: false, right: false };
+      if (resolvedSource.side === "left") {
+        entry.left = true;
+      } else {
+        entry.right = true;
+      }
+      map.set(key, entry);
+    });
+
+    return map;
+  }, [validIndices, flowEdges, nodePositions]);
 
   const edgeRouting = props.edgeRouting;
   React.useEffect(() => {
@@ -302,8 +362,8 @@ function CanvasInner(props: CanvasInnerProps) {
         const e = flowEdges[i] as (typeof flowEdges)[number];
         const id = mwEdgeId(e.from, e.trigger, e.to, i);
         const routing = e.routing ?? defaultRouting;
-        const sourcePos = finalPositions[e.from];
-        const targetPos = finalPositions[e.to];
+        const sourcePos = nodePositions[e.from];
+        const targetPos = nodePositions[e.to];
         const slotIndex = targetSlotIndices.get(i) ?? 0;
         const resolvedPort = resolveTargetPort(
           sourcePos,
@@ -311,12 +371,28 @@ function CanvasInner(props: CanvasInnerProps) {
           e.targetSide,
           slotIndex,
         );
+        const resolvedSource = resolveSourcePort(
+          e.trigger,
+          sourcePos,
+          targetPos,
+          e.sourceSide,
+        );
         const edgeAvoidCollisions = e.avoidCollisions ?? avoidCollisions;
+
+        const sourceKey = `${e.from}:${e.trigger}:${resolvedSource.side}`;
+        const sourceSlot = sourceSlotIndices.indices.get(i) ?? 0;
+        const sourceTotal = sourceSlotIndices.counts.get(sourceKey) ?? 1;
+
+        let stepPosition: number | undefined;
+
+        if (sourceTotal > 1) {
+          stepPosition = 0.3 + (sourceSlot / (sourceTotal - 1)) * 0.4;
+        }
 
         return createFlowEdge(routing, {
           id,
           source: e.from,
-          sourceHandle: e.trigger === "" ? "__empty" : e.trigger,
+          sourceHandle: resolvedSource.handleId,
           target: e.to,
           targetHandle: resolvedPort.handleId,
           label: e.label,
@@ -326,6 +402,11 @@ function CanvasInner(props: CanvasInnerProps) {
           style: { strokeDasharray: MW_DASH[e.lineStyle ?? "solid"] },
           className: hoveredEdgeIds.has(id) ? "mw-edge-hovered" : undefined,
           avoidCollisions: edgeAvoidCollisions,
+          pathOptions: {
+            borderRadius: MW_EDGE_BORDER_RADIUS,
+            offset: MW_EDGE_OFFSET,
+            stepPosition,
+          },
         });
       }),
     );
@@ -336,8 +417,9 @@ function CanvasInner(props: CanvasInnerProps) {
     setRfEdges,
     edgeRouting,
     avoidCollisions,
-    finalPositions,
+    nodePositions,
     targetSlotIndices,
+    sourceSlotIndices,
   ]);
 
   React.useEffect(() => {
@@ -437,9 +519,26 @@ function CanvasInner(props: CanvasInnerProps) {
     [],
   );
 
+  const getActiveSourceSides = React.useCallback(
+    (nodeId: string, triggerId: string) => {
+      return (
+        activeSourceSides.get(`${nodeId}:${triggerId}`) ?? {
+          left: false,
+          right: true,
+        }
+      );
+    },
+    [activeSourceSides],
+  );
+
   const callbacks = React.useMemo(
-    () => ({ onRegistryChange, onTriggerClick, onTriggerHover }),
-    [onRegistryChange, onTriggerClick, onTriggerHover],
+    () => ({
+      onRegistryChange,
+      onTriggerClick,
+      onTriggerHover,
+      getActiveSourceSides,
+    }),
+    [onRegistryChange, onTriggerClick, onTriggerHover, getActiveSourceSides],
   );
 
   React.useEffect(() => {
@@ -526,17 +625,8 @@ function CanvasInner(props: CanvasInnerProps) {
     setShowPositions(true);
     try {
       await navigator.clipboard.writeText(snippet);
-    } catch {
-      const ta = document.createElement("textarea");
-      ta.value = snippet;
-      document.body.appendChild(ta);
-      ta.select();
-      try {
-        document.execCommand("copy");
-      } catch (err: unknown) {
-        console.error("[microwireflow] copy positions failed", err);
-      }
-      ta.remove();
+    } catch (err: unknown) {
+      console.error("[microwireflow] copy positions failed", err);
     }
     onPositionsExport?.(currentPositions, snippet);
   }, [snippet, currentPositions, onPositionsExport]);

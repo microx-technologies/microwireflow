@@ -26,35 +26,51 @@ export type ScreenNodeType = Node<ScreenNodeData, typeof SCREEN_NODE_TYPE>;
 export function ScreenNode(props: NodeProps<ScreenNodeType>) {
   const { flowNode, highlighted } = props.data;
   const callbacks = React.useContext(ScreenNodeCallbacksContext);
+  const callbacksRef = React.useRef(callbacks);
+  callbacksRef.current = callbacks;
   const countsRef = React.useRef<Record<string, number>>({});
 
+  const register = React.useCallback(
+    (triggerId: string) => {
+      countsRef.current[triggerId] = (countsRef.current[triggerId] ?? 0) + 1;
+      callbacksRef.current?.onRegistryChange(props.id, {
+        ...countsRef.current,
+      });
+      return () => {
+        const next = (countsRef.current[triggerId] ?? 1) - 1;
+        if (next <= 0) {
+          delete countsRef.current[triggerId];
+        } else {
+          countsRef.current[triggerId] = next;
+        }
+        callbacksRef.current?.onRegistryChange(props.id, {
+          ...countsRef.current,
+        });
+      };
+    },
+    [props.id],
+  );
+
   const registry = React.useMemo(() => {
-    const emit = () => {
-      callbacks?.onRegistryChange(props.id, { ...countsRef.current });
-    };
     return {
       nodeId: props.id,
-      register: (triggerId: string) => {
-        countsRef.current[triggerId] = (countsRef.current[triggerId] ?? 0) + 1;
-        emit();
-        return () => {
-          const next = (countsRef.current[triggerId] ?? 1) - 1;
-          if (next <= 0) {
-            delete countsRef.current[triggerId];
-          } else {
-            countsRef.current[triggerId] = next;
-          }
-          emit();
-        };
-      },
+      register,
       onTriggerClick: (triggerId: string, e: React.MouseEvent) => {
-        callbacks?.onTriggerClick(props.id, triggerId, e);
+        callbacksRef.current?.onTriggerClick(props.id, triggerId, e);
       },
       onTriggerHover: (nodeId: string, triggerId: string | null) => {
-        callbacks?.onTriggerHover(nodeId, triggerId);
+        callbacksRef.current?.onTriggerHover(nodeId, triggerId);
+      },
+      getActiveSides: (triggerId: string) => {
+        return (
+          callbacksRef.current?.getActiveSourceSides?.(props.id, triggerId) ?? {
+            left: false,
+            right: true,
+          }
+        );
       },
     };
-  }, [props.id, callbacks]);
+  }, [props.id, register]);
 
   const kind = flowNode.kind === "" ? undefined : flowNode.kind;
   const kindClass =
