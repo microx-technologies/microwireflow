@@ -29,6 +29,7 @@ import {
   mwEdgeId,
 } from "@/constants.ts";
 import {
+  computeActiveSourceSides,
   createFlowEdge,
   createSmartEdgeTypes,
   type FlowEdgeInstance,
@@ -86,6 +87,7 @@ type CanvasInnerProps = {
   avoidCollisions?: boolean;
   lineHops?: boolean;
   arrow?: ArrowStyle;
+  triggerDots?: boolean;
   nodeWidth: number;
   maxFitZoom: number;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
@@ -339,29 +341,7 @@ function CanvasInner(props: CanvasInnerProps) {
   }, [validIndices, flowEdges, nodePositions]);
 
   const activeSourceSides = React.useMemo(() => {
-    const map = new Map<string, { left: boolean; right: boolean }>();
-
-    validIndices.forEach((i) => {
-      const e = flowEdges[i] as (typeof flowEdges)[number];
-      const sourcePos = nodePositions[e.from];
-      const targetPos = nodePositions[e.to];
-      const resolvedSource = resolveSourcePort(
-        e.trigger,
-        sourcePos,
-        targetPos,
-        e.sourceSide,
-      );
-      const key = `${e.from}:${e.trigger}`;
-      const entry = map.get(key) ?? { left: false, right: false };
-      if (resolvedSource.side === "left") {
-        entry.left = true;
-      } else {
-        entry.right = true;
-      }
-      map.set(key, entry);
-    });
-
-    return map;
+    return computeActiveSourceSides(validIndices, flowEdges, nodePositions);
   }, [validIndices, flowEdges, nodePositions]);
 
   const edgeRouting = props.edgeRouting;
@@ -542,16 +522,20 @@ function CanvasInner(props: CanvasInnerProps) {
     [],
   );
 
+  const triggerDots = props.triggerDots ?? true;
   const getActiveSourceSides = React.useCallback(
     (nodeId: string, triggerId: string) => {
+      if (!triggerDots) {
+        return { left: false, right: false };
+      }
       return (
         activeSourceSides.get(`${nodeId}:${triggerId}`) ?? {
           left: false,
-          right: true,
+          right: false,
         }
       );
     },
-    [activeSourceSides],
+    [activeSourceSides, triggerDots],
   );
 
   const callbacks = React.useMemo(
@@ -967,6 +951,7 @@ export function Wireflow(props: WireflowProps) {
           avoidCollisions={props.avoidCollisions}
           lineHops={props.lineHops}
           arrow={props.arrow}
+          triggerDots={props.triggerDots}
           nodeWidth={nodeWidth}
           maxFitZoom={maxFitZoom}
           wrapperRef={wrapperRef}

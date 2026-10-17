@@ -35,7 +35,7 @@ export function Trigger(props: TriggerProps) {
   const baseId = props.id === "" ? MW_EMPTY_TRIGGER_HANDLE_ID : props.id;
   const sides = reg?.getActiveSides?.(props.id) ?? {
     left: false,
-    right: true,
+    right: false,
   };
 
   return (

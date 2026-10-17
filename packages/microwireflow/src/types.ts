@@ -62,6 +62,7 @@ export type WireflowProps = {
   avoidCollisions?: boolean;
   lineHops?: boolean;
   arrow?: ArrowStyle;
+  triggerDots?: boolean;
   nodeWidth?: number;
   maxFitZoom?: number;
   onPositionsExport?: (positions: FlowPositions, snippet: string) => void;

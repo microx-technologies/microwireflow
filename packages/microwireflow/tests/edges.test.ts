@@ -11,6 +11,7 @@ import {
   mwEdgeId,
 } from "@/constants.ts";
 import {
+  computeActiveSourceSides,
   createBuiltInEdge,
   createFlowEdge,
   resolveMarkerEnd,
@@ -362,5 +363,64 @@ describe("edges", () => {
       markerEnd: marker,
     });
     expect(flowEdge.markerEnd).toEqual(marker);
+  });
+
+  test("computeActiveSourceSides returns empty map when no edges", () => {
+    const map = computeActiveSourceSides([], [], {});
+    expect(map.size).toBe(0);
+    expect(map.get("login:submit")).toBeUndefined();
+  });
+
+  test("computeActiveSourceSides sets right side when target is to the right", () => {
+    const edges = [{ from: "login", trigger: "submit", to: "home" }];
+    const positions = {
+      login: { x: 0, y: 0 },
+      home: { x: 800, y: 0 },
+    };
+    const map = computeActiveSourceSides([0], edges, positions);
+    expect(map.get("login:submit")).toEqual({ left: false, right: true });
+    // An unconnected trigger has no entry
+    expect(map.get("login:other")).toBeUndefined();
+  });
+
+  test("computeActiveSourceSides sets left side when target is to the left", () => {
+    const edges = [{ from: "reset", trigger: "send", to: "login" }];
+    const positions = {
+      reset: { x: 800, y: 0 },
+      login: { x: 0, y: 0 },
+    };
+    const map = computeActiveSourceSides([0], edges, positions);
+    expect(map.get("reset:send")).toEqual({ left: true, right: false });
+  });
+
+  test("computeActiveSourceSides supports branching to both sides", () => {
+    const edges = [
+      { from: "login", trigger: "submit", to: "home" },
+      { from: "login", trigger: "submit", to: "sidebar" },
+    ];
+    const positions = {
+      login: { x: 800, y: 0 },
+      home: { x: 1600, y: 0 },
+      sidebar: { x: 0, y: 0 },
+    };
+    const map = computeActiveSourceSides([0, 1], edges, positions);
+    expect(map.get("login:submit")).toEqual({ left: true, right: true });
+  });
+
+  test("computeActiveSourceSides respects explicit sourceSide", () => {
+    const edges = [
+      {
+        from: "reset",
+        trigger: "send",
+        to: "login",
+        sourceSide: "right" as const,
+      },
+    ];
+    const positions = {
+      reset: { x: 800, y: 0 },
+      login: { x: 0, y: 0 },
+    };
+    const map = computeActiveSourceSides([0], edges, positions);
+    expect(map.get("reset:send")).toEqual({ left: false, right: true });
   });
 });

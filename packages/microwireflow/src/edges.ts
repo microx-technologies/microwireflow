@@ -28,6 +28,8 @@ import {
 import type {
   ArrowStyle,
   EdgeRouting,
+  FlowEdge,
+  FlowPositions,
   SourceSide,
   TargetSide,
 } from "@/types.ts";
@@ -105,6 +107,39 @@ export function resolveSourcePort(
         side: "right",
       };
   }
+}
+
+export function computeActiveSourceSides(
+  validIndices: number[],
+  flowEdges: FlowEdge[],
+  nodePositions: FlowPositions,
+): Map<string, { left: boolean; right: boolean }> {
+  const map = new Map<string, { left: boolean; right: boolean }>();
+
+  validIndices.forEach((i) => {
+    const e = flowEdges[i];
+    if (!e) {
+      return;
+    }
+    const sourcePos = nodePositions[e.from];
+    const targetPos = nodePositions[e.to];
+    const resolvedSource = resolveSourcePort(
+      e.trigger,
+      sourcePos,
+      targetPos,
+      e.sourceSide,
+    );
+    const key = `${e.from}:${e.trigger}`;
+    const entry = map.get(key) ?? { left: false, right: false };
+    if (resolvedSource.side === "left") {
+      entry.left = true;
+    } else {
+      entry.right = true;
+    }
+    map.set(key, entry);
+  });
+
+  return map;
 }
 
 export type CreateBuiltInEdgeOptions = {

@@ -51,6 +51,18 @@ export function ScreenNode(props: NodeProps<ScreenNodeType>) {
     [props.id],
   );
 
+  const getActiveSides = React.useCallback(
+    (triggerId: string) => {
+      return (
+        callbacks?.getActiveSourceSides?.(props.id, triggerId) ?? {
+          left: false,
+          right: false,
+        }
+      );
+    },
+    [callbacks, props.id],
+  );
+
   const registry = React.useMemo(() => {
     return {
       nodeId: props.id,
@@ -61,16 +73,9 @@ export function ScreenNode(props: NodeProps<ScreenNodeType>) {
       onTriggerHover: (nodeId: string, triggerId: string | null) => {
         callbacksRef.current?.onTriggerHover(nodeId, triggerId);
       },
-      getActiveSides: (triggerId: string) => {
-        return (
-          callbacksRef.current?.getActiveSourceSides?.(props.id, triggerId) ?? {
-            left: false,
-            right: true,
-          }
-        );
-      },
+      getActiveSides,
     };
-  }, [props.id, register]);
+  }, [props.id, register, getActiveSides]);
 
   const kind = flowNode.kind === "" ? undefined : flowNode.kind;
   const kindClass =
