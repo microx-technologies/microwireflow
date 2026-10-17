@@ -1,6 +1,16 @@
 import { createSmartEdge } from "@tisoap/react-flow-smart-edge";
-import type { BuiltInEdge, Edge, EdgeTypes } from "@xyflow/react";
 import {
+  type BuiltInEdge,
+  type Edge,
+  type EdgeMarker,
+  type EdgeMarkerType,
+  type EdgeTypes,
+  MarkerType,
+} from "@xyflow/react";
+import {
+  MW_ARROW_COLOR,
+  MW_ARROW_HEIGHT,
+  MW_ARROW_WIDTH,
   MW_EDGE_BORDER_RADIUS,
   MW_EDGE_GRID_RATIO,
   MW_EDGE_NODE_PADDING,
@@ -15,9 +25,44 @@ import {
   MW_TARGET_HANDLE_RIGHT_ID,
   MW_TARGET_HANDLE_TOP_ID,
 } from "@/constants.ts";
-import type { EdgeRouting, SourceSide, TargetSide } from "@/types.ts";
+import type {
+  ArrowStyle,
+  EdgeRouting,
+  SourceSide,
+  TargetSide,
+} from "@/types.ts";
 
 export const SMART_EDGE_TYPE_PREFIX = "smart_";
+
+export function resolveMarkerEnd(
+  arrow?: ArrowStyle,
+  defaultArrow: ArrowStyle = true,
+): EdgeMarker | undefined {
+  const effective = arrow ?? defaultArrow;
+  if (effective === false || effective === "none") {
+    return undefined;
+  }
+  if (effective === true || effective === "closed") {
+    return {
+      type: MarkerType.ArrowClosed,
+      color: MW_ARROW_COLOR,
+      width: MW_ARROW_WIDTH,
+      height: MW_ARROW_HEIGHT,
+    };
+  }
+  if (effective === "open") {
+    return {
+      type: MarkerType.Arrow,
+      color: MW_ARROW_COLOR,
+      width: MW_ARROW_WIDTH,
+      height: MW_ARROW_HEIGHT,
+    };
+  }
+  if (typeof effective === "object") {
+    return effective;
+  }
+  return undefined;
+}
 
 export type SourcePortResolution = {
   handleId: string;
@@ -74,6 +119,8 @@ export type CreateBuiltInEdgeOptions = {
   interactionWidth: number;
   style: React.CSSProperties;
   className?: string;
+  markerEnd?: EdgeMarkerType;
+  markerStart?: EdgeMarkerType;
   pathOptions?: {
     borderRadius?: number;
     offset?: number;

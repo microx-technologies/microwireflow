@@ -84,6 +84,22 @@ export async function exportImage(
         element.style.cssText = previous;
       });
     });
+    const arrowheads = viewport.querySelectorAll(
+      ".react-flow__arrowhead polyline",
+    );
+    arrowheads.forEach((polyline) => {
+      const element = polyline as unknown as SVGElement & HTMLElement;
+      const computed = window.getComputedStyle(element);
+      const previous = element.style.cssText;
+      element.style.stroke = computed.getPropertyValue("stroke");
+      element.style.fill = computed.getPropertyValue("fill");
+      element.style.strokeLinecap = computed.getPropertyValue("stroke-linecap");
+      element.style.strokeLinejoin =
+        computed.getPropertyValue("stroke-linejoin");
+      restoreInlineStyles.push(() => {
+        element.style.cssText = previous;
+      });
+    });
   };
 
   inlineSvgEdgeStyles();

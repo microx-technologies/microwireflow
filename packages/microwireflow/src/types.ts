@@ -1,3 +1,4 @@
+import type { EdgeMarker } from "@xyflow/react";
 import type * as React from "react";
 
 export type LineStyle = "solid" | "dashed" | "dotted";
@@ -7,6 +8,10 @@ export type EdgeRouting = "smoothstep" | "step" | "bezier" | "straight";
 export type TargetSide = "left" | "top" | "right" | "bottom";
 
 export type SourceSide = "left" | "right";
+
+export type ArrowVariant = boolean | "closed" | "open" | "none";
+
+export type ArrowStyle = ArrowVariant | EdgeMarker;
 
 export type TriggerProps = {
   id: string;
@@ -35,6 +40,7 @@ export type FlowEdge = {
   lineHops?: boolean;
   targetSide?: TargetSide;
   sourceSide?: SourceSide;
+  arrow?: ArrowStyle;
 };
 
 export type FlowPositions = Record<string, { x: number; y: number }>;
@@ -55,6 +61,7 @@ export type WireflowProps = {
   edgeRouting?: EdgeRouting;
   avoidCollisions?: boolean;
   lineHops?: boolean;
+  arrow?: ArrowStyle;
   nodeWidth?: number;
   maxFitZoom?: number;
   onPositionsExport?: (positions: FlowPositions, snippet: string) => void;

@@ -1,5 +1,9 @@
+import { MarkerType } from "@xyflow/react";
 import { describe, expect, test } from "vitest";
 import {
+  MW_ARROW_COLOR,
+  MW_ARROW_HEIGHT,
+  MW_ARROW_WIDTH,
   MW_DASH,
   MW_DEFAULT_EDGE_ROUTING,
   MW_EDGE_BORDER_RADIUS,
@@ -9,6 +13,7 @@ import {
 import {
   createBuiltInEdge,
   createFlowEdge,
+  resolveMarkerEnd,
   resolveSourcePort,
   resolveTargetPort,
 } from "@/edges.ts";
@@ -262,5 +267,100 @@ describe("edges", () => {
       avoidCollisions: false,
     });
     expect(edge.type).toBe("smoothstep");
+  });
+
+  test("resolveMarkerEnd defaults to closed arrow", () => {
+    expect(resolveMarkerEnd()).toEqual({
+      type: MarkerType.ArrowClosed,
+      color: MW_ARROW_COLOR,
+      width: MW_ARROW_WIDTH,
+      height: MW_ARROW_HEIGHT,
+    });
+    expect(resolveMarkerEnd(true)).toEqual({
+      type: MarkerType.ArrowClosed,
+      color: MW_ARROW_COLOR,
+      width: MW_ARROW_WIDTH,
+      height: MW_ARROW_HEIGHT,
+    });
+    expect(resolveMarkerEnd("closed")).toEqual({
+      type: MarkerType.ArrowClosed,
+      color: MW_ARROW_COLOR,
+      width: MW_ARROW_WIDTH,
+      height: MW_ARROW_HEIGHT,
+    });
+  });
+
+  test("resolveMarkerEnd handles open arrow", () => {
+    expect(resolveMarkerEnd("open")).toEqual({
+      type: MarkerType.Arrow,
+      color: MW_ARROW_COLOR,
+      width: MW_ARROW_WIDTH,
+      height: MW_ARROW_HEIGHT,
+    });
+  });
+
+  test("resolveMarkerEnd handles false and none", () => {
+    expect(resolveMarkerEnd(false)).toBeUndefined();
+    expect(resolveMarkerEnd("none")).toBeUndefined();
+  });
+
+  test("resolveMarkerEnd respects defaultArrow fallback", () => {
+    expect(resolveMarkerEnd(undefined, false)).toBeUndefined();
+    expect(resolveMarkerEnd(undefined, "open")).toEqual({
+      type: MarkerType.Arrow,
+      color: MW_ARROW_COLOR,
+      width: MW_ARROW_WIDTH,
+      height: MW_ARROW_HEIGHT,
+    });
+    // Edge-level override wins over default
+    expect(resolveMarkerEnd(false, true)).toBeUndefined();
+    expect(resolveMarkerEnd("closed", false)).toEqual({
+      type: MarkerType.ArrowClosed,
+      color: MW_ARROW_COLOR,
+      width: MW_ARROW_WIDTH,
+      height: MW_ARROW_HEIGHT,
+    });
+  });
+
+  test("resolveMarkerEnd preserves custom EdgeMarker object", () => {
+    const customMarker = {
+      type: MarkerType.ArrowClosed,
+      color: "#ff0000",
+      width: 24,
+      height: 24,
+    };
+    expect(resolveMarkerEnd(customMarker)).toBe(customMarker);
+  });
+
+  test("createBuiltInEdge and createFlowEdge propagate markerEnd", () => {
+    const marker = resolveMarkerEnd(true);
+    const builtIn = createBuiltInEdge("smoothstep", {
+      id: "e-m1",
+      source: "login",
+      sourceHandle: "submit",
+      target: "home",
+      targetHandle: "__target_left",
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      interactionWidth: 8,
+      style: {},
+      markerEnd: marker,
+    });
+    expect(builtIn.markerEnd).toEqual(marker);
+
+    const flowEdge = createFlowEdge("smoothstep", {
+      id: "e-m2",
+      source: "login",
+      sourceHandle: "submit",
+      target: "home",
+      targetHandle: "__target_left",
+      labelBgPadding: [8, 4],
+      labelBgBorderRadius: 4,
+      interactionWidth: 8,
+      style: {},
+      avoidCollisions: true,
+      markerEnd: marker,
+    });
+    expect(flowEdge.markerEnd).toEqual(marker);
   });
 });

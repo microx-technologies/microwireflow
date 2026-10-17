@@ -13,6 +13,7 @@ import {
 } from "@xyflow/react";
 import * as React from "react";
 import {
+  MW_ARROW_COLOR,
   MW_DASH,
   MW_DEFAULT_EDGE_ROUTING,
   MW_DEFAULT_MAX_FIT_ZOOM,
@@ -31,6 +32,7 @@ import {
   createFlowEdge,
   createSmartEdgeTypes,
   type FlowEdgeInstance,
+  resolveMarkerEnd,
   resolveSourcePort,
   resolveTargetPort,
 } from "@/edges.ts";
@@ -49,6 +51,7 @@ import {
 import { syncFlowNodes } from "@/syncNodes.ts";
 import { ScreenNodeCallbacksContext, sameCounts } from "@/triggerRegistry.ts";
 import type {
+  ArrowStyle,
   EdgeRouting,
   Flow,
   FlowPositions,
@@ -82,6 +85,7 @@ type CanvasInnerProps = {
   edgeRouting?: EdgeRouting;
   avoidCollisions?: boolean;
   lineHops?: boolean;
+  arrow?: ArrowStyle;
   nodeWidth: number;
   maxFitZoom: number;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
@@ -361,8 +365,10 @@ function CanvasInner(props: CanvasInnerProps) {
   }, [validIndices, flowEdges, nodePositions]);
 
   const edgeRouting = props.edgeRouting;
+  const arrowProp = props.arrow;
   React.useEffect(() => {
     const defaultRouting = edgeRouting ?? MW_DEFAULT_EDGE_ROUTING;
+    const defaultArrow = arrowProp ?? true;
     setRfEdges(
       validIndices.map((i) => {
         const e = flowEdges[i] as (typeof flowEdges)[number];
@@ -384,6 +390,7 @@ function CanvasInner(props: CanvasInnerProps) {
           e.sourceSide,
         );
         const edgeAvoidCollisions = e.avoidCollisions ?? avoidCollisions;
+        const markerEnd = resolveMarkerEnd(e.arrow, defaultArrow);
 
         const sourceKey = `${e.from}:${e.trigger}:${resolvedSource.side}`;
         const sourceSlot = sourceSlotIndices.indices.get(i) ?? 0;
@@ -408,6 +415,7 @@ function CanvasInner(props: CanvasInnerProps) {
           style: { strokeDasharray: MW_DASH[e.lineStyle ?? "solid"] },
           className: hoveredEdgeIds.has(id) ? "mw-edge-hovered" : undefined,
           avoidCollisions: edgeAvoidCollisions,
+          markerEnd,
           pathOptions: {
             borderRadius: MW_EDGE_BORDER_RADIUS,
             offset: MW_EDGE_OFFSET,
@@ -423,6 +431,7 @@ function CanvasInner(props: CanvasInnerProps) {
     setRfEdges,
     edgeRouting,
     avoidCollisions,
+    arrowProp,
     nodePositions,
     targetSlotIndices,
     sourceSlotIndices,
@@ -801,6 +810,7 @@ function CanvasInner(props: CanvasInnerProps) {
         <div className="mw-flow">
           <SmartEdgeProvider nodes={rfNodes} options={smartEdgeOptions}>
             <ReactFlow<ScreenNodeType, FlowEdgeInstance>
+              defaultMarkerColor={MW_ARROW_COLOR}
               nodes={rfNodes}
               edges={rfEdges}
               onNodesChange={handleNodesChange}
@@ -956,6 +966,7 @@ export function Wireflow(props: WireflowProps) {
           edgeRouting={props.edgeRouting}
           avoidCollisions={props.avoidCollisions}
           lineHops={props.lineHops}
+          arrow={props.arrow}
           nodeWidth={nodeWidth}
           maxFitZoom={maxFitZoom}
           wrapperRef={wrapperRef}

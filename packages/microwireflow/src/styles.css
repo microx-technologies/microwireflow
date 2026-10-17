@@ -16,6 +16,8 @@
   --mw-r-card: 255px 25px 225px 25px / 25px 225px 25px 255px;
   --mw-r-pill: 7rem 8rem 8rem 8rem / 4rem 5rem 6rem 6rem;
   --mw-node-width: 520px;
+  --xy-edge-stroke: var(--mw-ink);
+  --xy-edge-stroke-default: var(--mw-ink);
 
   position: relative;
   display: flex;
@@ -548,6 +550,17 @@
 
 .mw .react-flow__edge.mw-edge-hovered path.react-flow__edge-path {
   stroke-width: 3.5;
+}
+
+.mw .react-flow__arrowhead polyline {
+  stroke: var(--mw-ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mw .react-flow__arrowhead polyline.arrowclosed {
+  fill: var(--mw-ink);
+  stroke: var(--mw-ink);
 }
 
 .mw .react-flow__edge-textbg {
