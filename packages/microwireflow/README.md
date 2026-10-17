@@ -4,14 +4,23 @@ Code-first wireflow documentation for React. Wire plain TSX screen components to
 
 ## Installation
 
-This package is not on npm. Install from GitHub:
+Install directly from GitHub via the compiled release branch:
 
 ```bash
-# pnpm
-pnpm add github:microx-technologies/microwireflow#v0.1.0 @xyflow/react react react-dom
+# bun (latest stable release)
+bun add github:microx-technologies/microwireflow#latest @xyflow/react react react-dom
 
-# bun
-bun add github:microx-technologies/microwireflow#v0.1.0 @xyflow/react react react-dom
+# pnpm
+pnpm add github:microx-technologies/microwireflow#latest @xyflow/react react react-dom
+
+# npm
+npm install github:microx-technologies/microwireflow#latest @xyflow/react react react-dom
+```
+
+Or pin to a specific release tag/branch:
+
+```bash
+bun add github:microx-technologies/microwireflow#v0.1.2 @xyflow/react react react-dom
 ```
 
 

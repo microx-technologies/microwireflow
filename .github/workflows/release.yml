@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -37,6 +38,31 @@ jobs:
 
       - name: Build
         run: bun --filter '@microx-technologies/microwireflow' build && bun --filter '@microx-technologies/microwireflow-demo' build
+
+      - name: Push compiled release branch
+        run: |
+          VERSION="${{ github.ref_name }}"
+          TMP_COMPILED=$(mktemp -d)
+          cp -r packages/microwireflow/dist "$TMP_COMPILED/dist"
+          cp packages/microwireflow/package.json "$TMP_COMPILED/package.json"
+          cp packages/microwireflow/README.md "$TMP_COMPILED/README.md"
+          cp packages/microwireflow/LICENSE "$TMP_COMPILED/LICENSE"
+
+          cd "$TMP_COMPILED"
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${VERSION}"
+          git add -A
+          git commit -m "release: ${VERSION} compiled distribution"
+
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git push -f origin "${VERSION}"
+
+          if [[ "${VERSION}" != *-* ]]; then
+            git checkout -B latest
+            git push -f origin latest
+          fi
 
       - name: Pack tarball
         run: cd packages/microwireflow && bun pm pack && mv *.tgz ../../
