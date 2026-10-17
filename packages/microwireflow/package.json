@@ -1,5 +1,5 @@
 {
-  "name": "@microx-technologies/microwireflow",
+  "name": "microwireflow",
   "version": "0.1.2",
   "description": "Code-first wireflow docs library: plain TSX screens, declarative flow wiring, live React Flow canvas.",
   "type": "module",

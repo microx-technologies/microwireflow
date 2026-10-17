@@ -37,7 +37,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build
-        run: bun --filter '@microx-technologies/microwireflow' build && bun --filter '@microx-technologies/microwireflow-demo' build
+        run: bun --filter 'microwireflow' build && bun --filter '@microx-technologies/microwireflow-demo' build
 
       - name: Push compiled release branch
         run: |
