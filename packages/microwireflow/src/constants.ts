@@ -20,6 +20,9 @@ export const MW_DASH: Record<LineStyle, string | undefined> = {
 export const MW_EDGE_NODE_PADDING = 24;
 export const MW_EDGE_GRID_RATIO = 10;
 export const MW_HOP_RADIUS = 7;
+export const MW_ARROW_COLOR = "#141414";
+export const MW_ARROW_WIDTH = 16;
+export const MW_ARROW_HEIGHT = 16;
 
 export const MW_TARGET_HANDLE_ID = "__target";
 export const MW_TARGET_HANDLE_LEFT_ID = "__target_left";

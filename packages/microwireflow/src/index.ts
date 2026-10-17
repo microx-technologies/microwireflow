@@ -1,5 +1,7 @@
 export { Trigger } from "@/Trigger.tsx";
 export type {
+  ArrowStyle,
+  ArrowVariant,
   EdgeRouting,
   Flow,
   FlowEdge,
